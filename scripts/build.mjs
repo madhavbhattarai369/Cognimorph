@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+import { createHash } from 'node:crypto';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -23,7 +24,8 @@ const NAV = [
   ['work.html', 'Work'],
   ['insights.html', 'Insights'],
   ['about.html', 'About'],
-  ['team.html', 'Team']
+  ['team.html', 'Team'],
+  ['careers.html', 'Careers']
 ];
 
 const FOOTER = [
@@ -37,7 +39,8 @@ const FOOTER = [
     ['work.html', 'Work'],
     ['insights.html', 'Insights'],
     ['about.html', 'About'],
-    ['team.html', 'Team']
+    ['team.html', 'Team'],
+    ['careers.html', 'Careers']
   ]],
   ['Get in touch', [
     [SITE.contactUrl, 'Contact us'],
@@ -110,7 +113,7 @@ function footer(root) {
     <div class="footer-top">
       <div class="footer-brand">
         <img src="${root}assets/logo-horizontal-dark.png" alt="Cognimorph" width="114" height="28" loading="lazy">
-        <p>Your digital partner for the AI age. Growth, build, creative and AI — one expert team, built in Nepal for ambitious brands worldwide.</p>
+        <p>Your digital partner for the AI age. Built by an expert team in Nepal, accessible globally — serving brands in Dubai, Singapore, the UK, Australia and the USA.</p>
         <p><a class="footer-link" href="mailto:${SITE.email}">${SITE.email}</a></p>
       </div>
 ${cols}
@@ -128,6 +131,28 @@ ${cols}
 </footer>`;
 }
 
+// Content-Security-Policy: only our own files, plus FormSubmit for the contact form.
+// The one inline script (theme + JS flag, runs before first paint) is allowed by hash,
+// so the policy stays correct automatically whenever that snippet changes.
+function csp(html) {
+  const hashes = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
+    .map(m => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`);
+  return [
+    "default-src 'self'",
+    `script-src 'self' ${hashes.join(' ')}`.trim(),
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self'",
+    "connect-src 'self' https://formsubmit.co",
+    "form-action 'self' https://formsubmit.co",
+    "manifest-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'"
+  ].join('; ');
+}
+const SECURITY_META = html =>
+  `<meta http-equiv="Content-Security-Policy" content="${csp(html)}">\n<meta name="referrer" content="strict-origin-when-cross-origin">`;
+
 let changed = 0;
 for (const { file, root } of PAGES) {
   const path = join(ROOT, file);
@@ -135,8 +160,19 @@ for (const { file, root } of PAGES) {
   const src = readFileSync(path, 'utf8');
   const out = src
     .replace(/<header id="site-header"[\s\S]*?<\/header>/, header(page, root))
-    .replace(/<footer id="site-footer"[\s\S]*?<\/footer>/, footer(root));
+    .replace(/<footer id="site-footer"[\s\S]*?<\/footer>/, footer(root))
+    .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>\n<meta name="referrer"[^>]*>\n/, '')
+    .replace(/(<meta charset="UTF-8">\n)/, (m) => m + SECURITY_META(src) + '\n');
   if (out !== src) { writeFileSync(path, out); changed++; }
+}
+
+// Keep the host-level header file (_headers) on the same inline-script hash
+const headersPath = join(ROOT, '_headers');
+if (existsSync(headersPath)) {
+  const index = readFileSync(join(ROOT, 'index.html'), 'utf8');
+  const hash = (csp(index).match(/'sha256-[^']+'/) || [''])[0];
+  const h = readFileSync(headersPath, 'utf8').replace(/'sha256-[^']*'/, hash);
+  writeFileSync(headersPath, h);
 }
 
 await build({ entryPoints: ['js/site.js', 'js/home.js'].map(f => join(ROOT, f)), outdir: join(ROOT, 'js'), outExtension: { '.js': '.min.js' }, minify: true, target: 'es2017', logLevel: 'warning' });

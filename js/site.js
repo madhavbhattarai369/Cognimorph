@@ -113,6 +113,7 @@
     initReveals();
     initParallax();
     initSpotlight();
+    initMagnetic();
     initAmbientPause();
     initContactForm();
     initAssistant();
@@ -289,6 +290,20 @@
     });
   }
 
+  // ---- Magnetic CTAs: primary buttons lean toward the cursor (fine pointers only) ---
+  function initMagnetic(){
+    if(!finePointer || reducedMotion) return;
+    Array.prototype.forEach.call(document.querySelectorAll('.btn-magnetic, #nav-cta'), function(btn){
+      btn.classList.add('btn-magnetic');
+      btn.addEventListener('pointermove', function(e){
+        var r = btn.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+        btn.style.transform = 'translate(' + (dx * 0.22).toFixed(1) + 'px,' + (dy * 0.32 - 2).toFixed(1) + 'px)';
+      });
+      btn.addEventListener('pointerleave', function(){ btn.style.transform = ''; });
+    });
+  }
+
   // ---- Pause looping panel animations when off-screen -----------------------------
   function initAmbientPause(){
     var loops = document.querySelectorAll('.anim-panel');
@@ -403,7 +418,7 @@
     },
     where: {
       q:'Where are you based?',
-      a:'We are registered in Nepal and work out of Kathmandu, serving clients across South Asia, the Gulf, the UK and Singapore.',
+      a:'We are an expert team built in Nepal and accessible globally. Our main client base is in Dubai, Singapore, the UK, Australia and the USA, and we work across their time zones.',
       next:['services','start']
     }
   };

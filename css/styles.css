@@ -719,6 +719,30 @@ html[data-theme="dark"] .theme-toggle .icon-sun{ display: block; }
 .icon-tile.icon-orange svg{ color: var(--cta); }
 .why-item:hover .icon-tile{ border-color: var(--accent); transform: translateY(-3px); }
 
+/* ---- Legal pages ---- */
+.legal h2{ margin-top: 2.6rem; scroll-margin-top: calc(var(--header-h) + 1.5rem); }
+.legal h2 + p, .legal h2 + ul{ margin-top: .8rem; }
+.legal-list{ display: grid; gap: .55rem; margin: .8rem 0 1rem; }
+.legal-list li{ position: relative; padding-left: 1.1rem; color: var(--text-soft); }
+.legal-list li::before{ content: ""; position: absolute; left: 0; top: .7em; width: 5px; height: 5px; border-radius: 50%; background: var(--cta); }
+.legal-list strong{ color: var(--text); font-weight: 600; }
+.legal-toc{ display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: 1.6rem; border-bottom: 1px solid var(--border); }
+.legal-toc a{ font-size: .82rem; padding: .35em .8em; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--text-soft); transition: border-color .2s ease, color .2s ease; }
+.legal-toc a:hover{ border-color: var(--accent); color: var(--text); }
+
+/* ---- Careers ---- */
+.role-list{ border-top: 1px solid var(--border-strong); }
+.role-row{
+  display: grid; grid-template-columns: minmax(180px, 1fr) 2fr; gap: 1rem 2rem;
+  padding: 1.5rem 0; border-bottom: 1px solid var(--border);
+  transition: padding-left .5s var(--ease-out);
+}
+.role-row:hover{ padding-left: .8rem; }
+.role-disc{ font-family: var(--font-display); font-size: clamp(1.2rem, 2vw, 1.5rem); }
+.role-row p{ color: var(--text-soft); margin: 0; }
+@media (max-width: 640px){ .role-row{ grid-template-columns: 1fr; } }
+.steps-list{ margin: .6rem 0 0; padding-left: 1.2rem; color: var(--text-soft); display: grid; gap: .45rem; }
+
 /* ---- Why us (about) ---- */
 .why-grid{
   display: grid;
@@ -892,6 +916,85 @@ html[data-theme="dark"] .plat .dot[style*="#111"]{ background: #F5F1E8 !importan
 .blink{ animation: blinkOp 1.1s steps(1) infinite; }
 @keyframes blinkOp{ 50%{ opacity: 0; } }
 .anim-panel.is-paused *{ animation-play-state: paused !important; }
+
+/* ---- Hero trust row (conversion) ---- */
+.hero-proof{ display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; margin-top: 1.6rem; font-size: .85rem; color: var(--text-soft); }
+.hero-proof li{ display: inline-flex; align-items: center; gap: .5rem; }
+.hero-proof li::before{
+  content: ""; width: 14px; height: 14px; flex-shrink: 0; border-radius: 50%;
+  background: color-mix(in srgb, var(--cta) 16%, transparent)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 7.2l2 2 4-4.4' fill='none' stroke='%23E96A24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+
+/* ==========================================================================
+   Home — manifesto: words light up as the reader scrolls through
+   ========================================================================== */
+.manifesto{ padding: clamp(5rem, 11vw, 9rem) 0 clamp(3rem, 7vw, 5rem); }
+.manifesto-text{
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4.4vw, 3.9rem);
+  line-height: 1.12;
+  letter-spacing: -.02em;
+  color: var(--text);
+  margin: 0;
+  text-wrap: pretty;
+}
+.manifesto-text em{ font-style: normal; color: var(--accent); }
+.js .manifesto-text .mw{ opacity: .16; transition: opacity .45s ease; }
+.js .manifesto-text .mw.on{ opacity: 1; }
+@media (min-width: 1100px){ .manifesto-text{ max-width: 22ch; } }
+
+/* ==========================================================================
+   Home — stacking service cards (pin and layer on scroll, large screens)
+   ========================================================================== */
+@media (min-width: 1000px) and (min-height: 720px){
+  .svc-stack{ margin-top: 2.6rem; padding-bottom: 2rem; }
+  .svc-stack .svc{
+    position: sticky;
+    top: calc(var(--header-h) + 22px + var(--si, 0) * 14px);
+    margin: 0 0 6vh;
+    padding: clamp(2rem, 3.4vw, 3rem);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    transform-origin: 50% 0;
+    will-change: transform;
+  }
+  .svc-stack .svc:first-of-type{ margin-top: 0; }
+  .svc-stack .svc::after{
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: var(--c-navy); opacity: var(--dim, 0);
+  }
+  .svc-stack .svc:last-child{ margin-bottom: 0; }
+}
+
+/* ==========================================================================
+   Home — kinetic capabilities marquee (JS drives speed from scroll velocity)
+   ========================================================================== */
+.kinetic{ padding: clamp(2.5rem, 6vw, 4.5rem) 0; overflow: hidden; border-top: 1px solid var(--border); }
+.kinetic-row{ overflow: hidden; }
+.kinetic-track{
+  display: flex; align-items: center; width: max-content;
+  gap: clamp(1.2rem, 3vw, 2.6rem);
+  will-change: transform;
+}
+.k-item{
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 8vw, 7rem);
+  line-height: 1;
+  letter-spacing: -.03em;
+  white-space: nowrap;
+  color: var(--text);
+}
+.k-outline{ color: transparent; -webkit-text-stroke: 1.2px var(--accent); }
+.k-sep{ width: clamp(10px, 1.4vw, 16px); height: clamp(10px, 1.4vw, 16px); border-radius: 50%; background: var(--cta); flex-shrink: 0; }
+.js .kinetic-track{ animation: none; }
+html:not(.js) .kinetic-track{ animation: slide 40s linear infinite; }
+
+/* ---- Magnetic CTAs ---- */
+.btn-magnetic{ transition: transform .5s var(--ease-out), background-color .25s ease, box-shadow .4s var(--ease-out); }
 
 /* ==========================================================================
    Home — client marquee
@@ -1277,6 +1380,14 @@ html[data-theme="dark"] .tool{ --tc: var(--tc-d, var(--accent)); }
 .profile-card h4{ margin-bottom: 0.15rem; }
 .profile-card .role{ font-size: 0.88rem; color: var(--accent); margin-bottom: 0.6rem; }
 .profile-card p{ font-size: 0.92rem; color: var(--text-soft); }
+.leader-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); margin-top: 2.8rem; }
+@media (max-width: 760px){ .leader-grid{ grid-template-columns: 1fr; } }
+.leader{ display: grid; grid-template-columns: minmax(120px, 42%) 1fr; gap: 1.5rem; align-items: end; }
+@media (max-width: 480px){ .leader{ grid-template-columns: 1fr; } }
+.leader .profile-photo{ margin: 0; }
+.leader:hover .profile-photo{ border-color: var(--accent); box-shadow: var(--shadow-md); }
+.leader:hover .initials{ color: var(--accent); }
+.leader .role{ font-size: .88rem; color: var(--accent); margin: .35rem 0 .8rem; }
 .division-heading{ margin-top: 3.4rem; padding-top: 1.2rem; border-top: 1px solid var(--border-strong); }
 .division-heading:first-of-type{ margin-top: 2.6rem; }
 
@@ -1690,4 +1801,5 @@ html[data-theme="dark"] .msg.me{ color: #F7F3EA; }
   .media img{ transform: none; }
   .band-media img{ height: 100%; }
   .marquee{ overflow-x: auto; }
+  .svc-stack .svc{ position: static !important; }
 }

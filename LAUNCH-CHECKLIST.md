@@ -7,7 +7,7 @@ Search the codebase for `SAMPLE` — every instance is marked.
 - `work.html` — four case studies. Figures are illustrative. Replace with audited,
   client-approved numbers, or remove any case you cannot evidence.
 - `index.html` — client marquee names, industry claims.
-- `team.html` — names, roles, photos.
+- `team.html` — leadership (Madhav Bhattarai, Bibek Shrestha) and Nabin Bhattarai are real; the other team names are samples. Add real photos for everyone.
 - Metrics band on `index.html` (7+ years, 150+ campaigns, 12 markets, 4 disciplines).
 
 Publishing invented client names or metrics you cannot back is the single largest
@@ -40,6 +40,11 @@ visitor is sent to a dead number.
   domain differs (search all files for `cognimorph.co`).
 - LinkedIn URL is a guess. Verify it in `scripts/build.mjs` (header/footer) and `contact.html`, then run `npm run build`.
 - `hello@cognimorph.co` must exist and be monitored.
+
+## 4b. Hosting and security headers
+- `_headers` works as-is on Netlify and Cloudflare Pages. On other hosts, set the same headers.
+- Make sure the host serves `404.html` for missing pages and `thank-you/index.html` at `/thank-you`.
+- If you add analytics, update the Content-Security-Policy in `scripts/build.mjs` and `_headers`, and the privacy policy.
 
 ## 5. Analytics and tracking
 Not installed deliberately — you should choose and configure these.

@@ -9,6 +9,9 @@
     var reducedMotion = C.reducedMotion;
 
     initMark(C);
+    initManifesto(C);
+    initServiceStack(C);
+    initKinetic(C);
     initTypewriter(C);
     initMarquee(C);
     initIconCloud(C);
@@ -122,6 +125,99 @@
     }
   }
 
+  // ---- Manifesto: words light up in reading order as the section scrolls through ----
+  function initManifesto(C){
+    var el = document.querySelector('[data-scrub]');
+    if(!el) return;
+    // wrap every word (including those inside <em>) in a span
+    var words = [];
+    (function walk(node){
+      Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+        if(ch.nodeType === 3){
+          var frag = document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(function(part){
+            if(!part) return;
+            if(/^\s+$/.test(part)){ frag.appendChild(document.createTextNode(part)); return; }
+            var w = document.createElement('span');
+            w.className = 'mw';
+            w.textContent = part;
+            words.push(w);
+            frag.appendChild(w);
+          });
+          ch.parentNode.replaceChild(frag, ch);
+        } else if(ch.nodeType === 1){ walk(ch); }
+      });
+    })(el);
+    if(C.reducedMotion){ words.forEach(function(w){ w.classList.add('on'); }); return; }
+
+    var visible = false, lit = -1;
+    C.observe([el], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
+    C.onScrollFrame(function(y, vh){
+      if(!visible) return;
+      var r = el.getBoundingClientRect();
+      // 0 when the block enters the lower part of the screen, 1 when it reaches the upper third
+      var p = (vh * 0.85 - r.top) / (r.height + vh * 0.5);
+      var n = Math.round(Math.max(0, Math.min(1, p)) * words.length);
+      if(n === lit) return;
+      for(var i = 0; i < words.length; i++) words[i].classList.toggle('on', i < n);
+      lit = n;
+    });
+  }
+
+  // ---- Service cards pin and stack; covered cards recede slightly -----------------
+  function initServiceStack(C){
+    var stack = document.querySelector('.svc-stack');
+    if(!stack || C.reducedMotion) return;
+    var cards = Array.prototype.slice.call(stack.querySelectorAll('.svc'));
+    cards.forEach(function(c, i){ c.style.setProperty('--si', i); });
+    var mq = window.matchMedia('(min-width: 1000px) and (min-height: 720px)');
+    var visible = false;
+    C.observe([stack], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
+    C.onScrollFrame(function(){
+      if(!visible) return;
+      if(!mq.matches){
+        cards.forEach(function(c){ if(c.style.transform){ c.style.transform = ''; c.style.removeProperty('--dim'); } });
+        return;
+      }
+      for(var i = 0; i < cards.length - 1; i++){
+        var cur = cards[i].getBoundingClientRect();
+        var next = cards[i + 1].getBoundingClientRect();
+        // how far the next card has slid over this one (0 .. 1)
+        var p = Math.max(0, Math.min(1, 1 - (next.top - cur.top) / cur.height));
+        cards[i].style.transform = 'scale(' + (1 - p * 0.05).toFixed(4) + ')';
+        cards[i].style.setProperty('--dim', (p * 0.28).toFixed(3));
+      }
+    });
+  }
+
+  // ---- Kinetic capabilities marquee: drifts, and speeds up / reverses with scroll ---
+  function initKinetic(C){
+    var track = document.querySelector('.kinetic-track');
+    if(!track || C.reducedMotion) return;
+    var x = 0, dir = -1, boost = 0, half = 0, visible = false, running = false, lastY = window.pageYOffset;
+    function measure(){ half = track.scrollWidth / 2; }
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    C.onScrollFrame(function(y){
+      var dy = y - lastY; lastY = y;
+      if(dy !== 0){ dir = dy > 0 ? -1 : 1; boost = Math.min(18, boost + Math.abs(dy) * 0.12); }
+    });
+    function frame(){
+      if(!visible){ running = false; return; }
+      boost *= 0.92;
+      x += dir * (0.6 + boost);
+      if(half){ if(x <= -half) x += half; if(x > 0) x -= half; }
+      var skew = Math.max(-6, Math.min(6, -dir * boost * 0.5));
+      track.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0) skewX(' + skew.toFixed(2) + 'deg)';
+      requestAnimationFrame(frame);
+    }
+    C.observe([track.closest('.kinetic')], function(_, inView){
+      visible = inView;
+      if(inView && !running){ running = true; requestAnimationFrame(frame); }
+    }, { once: false, rootMargin: '0px' });
+  }
+
   // ---- Hero typewriter ------------------------------------------------------------
   function initTypewriter(C){
     var el = document.getElementById('hero-type');
@@ -167,10 +263,11 @@
       { n:'Kathmandu Coffee Co.',s:'Nepal',     c:'#E96A24' },
       { n:'Everest Logistics',   s:'Nepal',     c:'#102A3A' },
       { n:'Sagarmatha Fintech',  s:'Nepal',     c:'#2C7CB0' },
-      { n:'Meridian Retail',     s:'UAE',       c:'#155E91' },
+      { n:'Meridian Retail',     s:'Dubai',       c:'#155E91' },
       { n:'Northwind Studios',   s:'UK',        c:'#B4531B' },
+      { n:'Harbor & Pine',       s:'USA',       c:'#155E91' },
       { n:'Lumen Health',        s:'Singapore', c:'#102A3A' },
-      { n:'Atlas Interiors',     s:'Qatar',     c:'#2C7CB0' }
+      { n:'Atlas Interiors',     s:'Australia',     c:'#2C7CB0' }
     ];
     function chip(b){
       var initials = b.n.split(' ').slice(0,2).map(function(w){ return w[0]; }).join('');
