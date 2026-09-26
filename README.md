@@ -1,0 +1,43 @@
+# Cognimorph website
+
+Static marketing site for [cognimorph.co](https://cognimorph.co) — plain HTML, one stylesheet and
+two small vanilla-JS files. No framework, no runtime dependencies.
+
+## Build
+
+```bash
+npm install      # once — installs esbuild (dev only)
+npm run build    # renders header/footer into every page, minifies CSS + JS
+npm start        # serves the folder at http://localhost:8080
+```
+
+Pages load the **minified** files (`css/styles.min.css`, `js/site.min.js`, `js/home.min.js`), so run
+`npm run build` after editing any source file. The built output is committed, so the folder can
+be uploaded to any static host as-is.
+
+## Structure
+
+| Path | What it is |
+| --- | --- |
+| `*.html` | Pages. Header and footer blocks are generated — edit them in `scripts/build.mjs`. |
+| `thank-you/index.html` | Post-enquiry page, served at `https://cognimorph.co/thank-you`. |
+| `css/styles.css` | Design system: brand tokens, components, motion, reduced-motion rules. |
+| `js/site.js` | Shared behaviour: menu, reveals, parallax, contact form, assistant. Settings in `CONFIG`. |
+| `js/home.js` | Home only: C+M mark controller, typewriter, marquee, counters, tool stack. |
+| `scripts/build.mjs` | Shared header/footer + minification. Navigation and footer links live here. |
+| `assets/` | Self-hosted variable fonts, responsive AVIF/WebP/JPEG imagery, logos, icons. |
+
+## Contact flow
+
+Every "Contact / Let's talk / Start a project" CTA links to `contact.html`
+(`https://cognimorph.co/contact.html` in production). The form posts to FormSubmit for
+**hello@cognimorph.co** and then redirects to **https://cognimorph.co/thank-you**. See
+`LAUNCH-CHECKLIST.md` for the one-time FormSubmit activation.
+
+## Motion principles
+
+- Hierarchy: hero (strongest) → section headings and imagery → cards → micro-interactions.
+- Only `transform`, `opacity` and one-shot `clip-path` reveals; scroll work is batched into a single
+  `requestAnimationFrame`; looping animations pause when off-screen.
+- `prefers-reduced-motion` removes non-essential motion and shows all content immediately.
+- Without JavaScript every section is visible (hidden reveal states only apply under `html.js`).

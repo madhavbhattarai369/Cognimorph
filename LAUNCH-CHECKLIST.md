@@ -14,29 +14,31 @@ Publishing invented client names or metrics you cannot back is the single larges
 risk on this site. Two real case studies beat four invented ones.
 
 ## 2. Activate the contact form (one click)
-The form is already wired to deliver to **hello@cognimorph.co** via FormSubmit
-(`contact.html` → `action="https://formsubmit.co/ajax/hello@cognimorph.co"`).
+The form delivers to **hello@cognimorph.co** via FormSubmit and then sends the visitor to
+**https://cognimorph.co/thank-you** (the page lives in `thank-you/index.html`).
+- With JavaScript: `contact.html` posts to `https://formsubmit.co/ajax/hello@cognimorph.co`,
+  then redirects to the URL in the form's `data-redirect` attribute.
+- Without JavaScript: the form posts natively to `https://formsubmit.co/hello@cognimorph.co`
+  and FormSubmit follows the hidden `_next` field to the same thank-you URL.
 
 FormSubmit requires a one-time confirmation before it will forward anything:
 1. Deploy the site, open the live contact page and send one test enquiry.
 2. FormSubmit emails hello@cognimorph.co an activation link. Click it.
-3. Send a second test — it should now arrive in the inbox.
+3. Send a second test — it should now arrive in the inbox and land on /thank-you.
 
-Until that link is clicked, submissions are accepted but not delivered, so do the
-test before announcing the site. A honeypot field (`_gotcha`) is already in place.
-
-If you would rather self-host the endpoint, swap the `action` URL for a Formspree,
-Basin or Netlify Forms endpoint — the JavaScript posts JSON and expects a 2xx, so
-any of those work without further changes.
+Until that link is clicked FormSubmit answers "needs activation"; the page then shows an
+"email us directly" fallback instead of pretending the message was sent. A honeypot field
+(`_honey`, FormSubmit's spam trap) is in place.
 
 ## 3. Set the WhatsApp number
-`js/site.js` → `var WA_NUMBER = '9771000000000';`
-Replace with the real business number in international format (no `+`, no spaces).
+`js/site.js` → `CONFIG.whatsapp` (international format, digits only, e.g. `'9779800000000'`),
+then run `npm run build`. While it is empty, every WhatsApp button stays hidden, so no
+visitor is sent to a dead number.
 
 ## 4. Confirm the domain and social links
 - All canonical tags and the sitemap assume `https://cognimorph.co/`. Update if the
   domain differs (search all files for `cognimorph.co`).
-- `js/site.js` → LinkedIn URL is a guess. Verify or remove.
+- LinkedIn URL is a guess. Verify it in `scripts/build.mjs` (header/footer) and `contact.html`, then run `npm run build`.
 - `hello@cognimorph.co` must exist and be monitored.
 
 ## 5. Analytics and tracking
@@ -54,7 +56,8 @@ Not installed deliberately — you should choose and configure these.
 - Update the privacy policy once you know which analytics you run
 
 ## Technical notes
-- Images ship as WebP with JPEG fallback, lazy-loaded below the fold.
+- See `README.md` for the build step and project structure.
+- Images ship as AVIF → WebP → JPEG with responsive `srcset`, lazy-loaded below the fold.
 - Structured data: Organization + FAQ (home), BreadcrumbList (inner pages).
 - Brand logos in the tool stack come from the open `simple-icons` set. LinkedIn,
   Adobe, Canva, OpenAI, Midjourney and Runway were removed from that set at the

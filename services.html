@@ -2,7 +2,8 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(d){d.classList.add('js');var t=null;try{t=localStorage.getItem('cognimorph-theme')}catch(e){}d.setAttribute('data-theme',t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})(document.documentElement)</script>
 <title>Services — Cognimorph</title>
 <meta name="description" content="Digital build, digital growth, creative production and AI & automation — Cognimorph's four disciplines, working as one accountable team.">
 <meta property="og:url" content="https://cognimorph.co/services.html">
@@ -10,13 +11,22 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:title" content="Services — Cognimorph">
 <meta property="og:description" content="Four disciplines. One accountable team. Explore Cognimorph's services.">
-<meta property="og:image" content="assets/logo-horizontal.png">
-<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="assets/favicon-180.png">
+<meta property="og:image" content="https://cognimorph.co/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cognimorph — Intelligence. Creative. Digital.">
+<meta name="twitter:image" content="https://cognimorph.co/assets/og-image.jpg">
 <link rel="canonical" href="https://cognimorph.co/services.html">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/favicon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="assets/favicon-180.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1822" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="assets/fonts/source-serif-4-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/styles.min.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -41,7 +51,42 @@
 <body>
 
 <a class="skip-link" href="#main">Skip to content</a>
-<header id="site-header"></header>
+<header id="site-header">
+  <div class="site-header">
+    <div class="container nav-row">
+      <a class="brand" href="index.html" aria-label="Cognimorph home"><img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30"><img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30"></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="services.html" aria-current="page">Services</a>
+        <a href="work.html">Work</a>
+        <a href="insights.html">Insights</a>
+        <a href="about.html">About</a>
+        <a href="team.html">Team</a>
+      </nav>
+      <div class="nav-right">
+        <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-moon" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-sun" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg></button>
+        <a class="btn btn-primary" id="nav-cta" href="contact.html">Let&rsquo;s talk</a>
+        <button type="button" class="icon-btn menu-toggle" id="menu-open" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu" inert>
+    <div class="mobile-menu-top">
+      <a class="brand" href="index.html" aria-label="Cognimorph home"><img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30"><img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30"></a>
+      <button type="button" class="icon-btn mobile-menu-close" id="menu-close" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <nav class="mobile-menu-links" aria-label="Mobile">
+      <a href="services.html" aria-current="page" style="--i:0"><span class="mnum" aria-hidden="true">01</span>Services</a>
+      <a href="work.html" style="--i:1"><span class="mnum" aria-hidden="true">02</span>Work</a>
+      <a href="insights.html" style="--i:2"><span class="mnum" aria-hidden="true">03</span>Insights</a>
+      <a href="about.html" style="--i:3"><span class="mnum" aria-hidden="true">04</span>About</a>
+      <a href="team.html" style="--i:4"><span class="mnum" aria-hidden="true">05</span>Team</a>
+    </nav>
+    <div class="mobile-menu-foot">
+      <a class="btn btn-primary" href="contact.html">Let&rsquo;s talk <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="mail" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a>
+    </div>
+  </div>
+</header>
 
 <main id="main" tabindex="-1">
   <section class="page-header">
@@ -53,130 +98,175 @@
 
   <section id="build" class="hairline">
     <div class="container">
-      <div class="split" style="align-items:center;margin-bottom:2.4rem">
-        <div class="icon-tile" style="margin-bottom:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px"><path d="M9 6L4 12l5 6M15 6l5 6-5 6"/></svg></div>
-        <div class="service-index" style="margin:0">01 — Digital Build</div>
+      <div class="service-head">
+        <div class="icon-tile" style="margin-bottom:0" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6L4 12l5 6M15 6l5 6-5 6"/></svg></div>
+        <span class="service-index">01 — Digital Build</span>
       </div>
-      <h2>Websites and apps people find <em class="hl">easy to use</em>.</h2>
+      <h2 class="reveal-up">Websites and apps people find <em class="hl">easy to use</em>.</h2>
       <p class="lede mt-2" style="max-width:58ch">A visitor decides in seconds whether your product is worth their attention. We design around how people actually behave — where they look first, what earns trust, where they drop off — then build it to stay fast and easy for your team to run.</p>
-      <div class="media media-wide media-parallax reveal-scale mt-3" style="max-height:340px"><picture><source srcset="assets/img-build.webp" type="image/webp"><img src="assets/img-build.jpg" alt="Blueprint-style abstract graphic representing development" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+      <div class="media media-banner media-parallax reveal-media mt-3"><picture><source type="image/avif" srcset="assets/img-build-600.avif 600w, assets/img-build-900.avif 900w" sizes="(max-width: 1240px) 92vw, 1100px"><source type="image/webp" srcset="assets/img-build-600.webp 600w, assets/img-build-900.webp 900w" sizes="(max-width: 1240px) 92vw, 1100px"><img src="assets/img-build-900.jpg" alt="Blueprint-style abstract graphic representing development" loading="lazy" decoding="async" width="900" height="675"></picture></div>
       <div class="split mt-3 reveal-up">
         <div>
-          <h4>What&rsquo;s included</h4>
+          <h3 class="h-sub">What&rsquo;s included</h3>
           <div class="service-list mt-2">
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Website development — from marketing sites to full e-commerce builds</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Application development for iOS, Android and web</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Custom software for internal tools and client-facing products</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Ongoing website &amp; app maintenance and support</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Website development — from marketing sites to full e-commerce builds</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Application development for iOS, Android and web</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Custom software for internal tools and client-facing products</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Ongoing website &amp; app maintenance and support</div>
           </div>
         </div>
         <div>
-          <h4>Talk to us if</h4>
+          <h3 class="h-sub">Talk to us if</h3>
           <p class="text-soft">Your site doesn&rsquo;t reflect where the business is today, or you need a tool built properly rather than patched together.</p>
         </div>
       </div>
-      <a class="btn btn-secondary mt-3" href="contact.html">Talk about digital build</a>
+      <a class="btn btn-secondary mt-3" href="contact.html">Talk about digital build <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </section>
 
   <section id="growth" class="bg-secondary hairline">
     <div class="container">
-      <div class="split" style="align-items:center;margin-bottom:2.4rem">
-        <div class="icon-tile" style="margin-bottom:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px"><path d="M4 17l5-6 4 4 7-9"/><path d="M15 6h5v5"/></svg></div>
-        <div class="service-index" style="margin:0">02 — Digital Growth</div>
+      <div class="service-head">
+        <div class="icon-tile" style="margin-bottom:0" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17l5-6 4 4 7-9"/><path d="M15 6h5v5"/></svg></div>
+        <span class="service-index">02 — Digital Growth</span>
       </div>
-      <h2>Digital marketing that brings the <em class="hl">right people</em> to you.</h2>
+      <h2 class="reveal-up">Digital marketing that brings the <em class="hl">right people</em> to you.</h2>
       <p class="lede mt-2" style="max-width:58ch">Social, search and paid media planned together, so every channel supports the others and every rupee is accounted for.</p>
-      <div class="media media-wide media-parallax reveal-scale mt-3" style="max-height:340px"><picture><source srcset="assets/img-growth.webp" type="image/webp"><img src="assets/img-growth.jpg" alt="Abstract rising-line graphic representing digital growth" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+      <div class="media media-banner media-parallax reveal-media mt-3"><picture><source type="image/avif" srcset="assets/img-growth-600.avif 600w, assets/img-growth-900.avif 900w" sizes="(max-width: 1240px) 92vw, 1100px"><source type="image/webp" srcset="assets/img-growth-600.webp 600w, assets/img-growth-900.webp 900w" sizes="(max-width: 1240px) 92vw, 1100px"><img src="assets/img-growth-900.jpg" alt="Abstract rising-line graphic representing digital growth" loading="lazy" decoding="async" width="900" height="675"></picture></div>
       <div class="split mt-3 reveal-up">
         <div>
-          <h4>What&rsquo;s included</h4>
+          <h3 class="h-sub">What&rsquo;s included</h3>
           <div class="service-list mt-2">
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Social media management — content, community, and calendar</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>SEO &amp; AEO, so you show up in search and in AI answers</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Performance marketing across paid social and search</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Brand &amp; content strategy that ties every channel together</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Social media management — content, community, and calendar</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>SEO &amp; AEO, so you show up in search and in AI answers</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Performance marketing across paid social and search</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Brand &amp; content strategy that ties every channel together</div>
           </div>
         </div>
         <div>
-          <h4>Talk to us if</h4>
+          <h3 class="h-sub">Talk to us if</h3>
           <p class="text-soft">You&rsquo;re spending on ads without a clear read on what works. Your brand doesn&rsquo;t say what makes you different yet.</p>
         </div>
       </div>
-      <a class="btn btn-secondary mt-3" href="contact.html">Talk about digital growth</a>
+      <a class="btn btn-secondary mt-3" href="contact.html">Talk about digital growth <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </section>
 
   <section id="creative" class="hairline">
     <div class="container">
-      <div class="split" style="align-items:center;margin-bottom:2.4rem">
-        <div class="icon-tile icon-orange" style="margin-bottom:0"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" style="width:32px;height:32px"><path d="M8 6l11 6-11 6V6z"/></svg></div>
-        <div class="service-index" style="margin:0">03 — Creative</div>
+      <div class="service-head">
+        <div class="icon-tile icon-orange" style="margin-bottom:0" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 6l11 6-11 6V6z"/></svg></div>
+        <span class="service-index">03 — Creative</span>
       </div>
-      <h2>Video and design people actually <em class="hl">stop to watch</em>.</h2>
+      <h2 class="reveal-up">Video and design people actually <em class="hl">stop to watch</em>.</h2>
       <p class="lede mt-2" style="max-width:58ch">Video, motion and design produced in-house — made to hold up in front of a real audience, not just in a pitch deck.</p>
-      <div class="media media-wide media-parallax reveal-scale mt-3" style="max-height:340px"><picture><source srcset="assets/img-creative.webp" type="image/webp"><img src="assets/img-creative.jpg" alt="Warm abstract arc graphic representing creative production" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+      <div class="media media-banner media-parallax reveal-media mt-3"><picture><source type="image/avif" srcset="assets/img-creative-600.avif 600w, assets/img-creative-900.avif 900w" sizes="(max-width: 1240px) 92vw, 1100px"><source type="image/webp" srcset="assets/img-creative-600.webp 600w, assets/img-creative-900.webp 900w" sizes="(max-width: 1240px) 92vw, 1100px"><img src="assets/img-creative-900.jpg" alt="Warm abstract arc graphic representing creative production" loading="lazy" decoding="async" width="900" height="675"></picture></div>
       <div class="split mt-3 reveal-up">
         <div>
-          <h4>What&rsquo;s included</h4>
+          <h3 class="h-sub">What&rsquo;s included</h3>
           <div class="service-list mt-2">
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Short &amp; long-form video editing</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Graphic design — for brand, product and campaign</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>CGI for product visuals and environments that don&rsquo;t exist yet</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>AI video production for faster, more flexible output</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Short &amp; long-form video editing</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Graphic design — for brand, product and campaign</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>CGI for product visuals and environments that don&rsquo;t exist yet</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>AI video production for faster, more flexible output</div>
           </div>
         </div>
         <div>
-          <h4>Talk to us if</h4>
+          <h3 class="h-sub">Talk to us if</h3>
           <p class="text-soft">You need an identity that matches your ambition, or a product worth showing off properly.</p>
         </div>
       </div>
-      <a class="btn btn-secondary mt-3" href="contact.html">Talk about creative</a>
+      <a class="btn btn-secondary mt-3" href="contact.html">Talk about creative <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </section>
 
   <section id="ai" class="bg-secondary">
     <div class="container">
-      <div class="split" style="align-items:center;margin-bottom:2.4rem">
-        <div class="icon-tile" style="margin-bottom:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg></div>
-        <div class="service-index" style="margin:0">04 — AI &amp; Automation</div>
+      <div class="service-head">
+        <div class="icon-tile" style="margin-bottom:0" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg></div>
+        <span class="service-index">04 — AI &amp; Automation</span>
       </div>
-      <h2>AI that gives your team <em class="hl">its week back</em>.</h2>
+      <h2 class="reveal-up">AI that gives your team <em class="hl">its week back</em>.</h2>
       <p class="lede mt-2" style="max-width:58ch">We find the work that shouldn&rsquo;t take a human&rsquo;s time, automate it properly, and train your team to run it.</p>
-      <div class="media media-wide media-parallax reveal-scale mt-3" style="max-height:340px"><picture><source srcset="assets/img-ai.webp" type="image/webp"><img src="assets/img-ai.jpg" alt="Geometric abstract graphic representing AI and automation" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+      <div class="media media-banner media-parallax reveal-media mt-3"><picture><source type="image/avif" srcset="assets/img-ai-600.avif 600w, assets/img-ai-900.avif 900w" sizes="(max-width: 1240px) 92vw, 1100px"><source type="image/webp" srcset="assets/img-ai-600.webp 600w, assets/img-ai-900.webp 900w" sizes="(max-width: 1240px) 92vw, 1100px"><img src="assets/img-ai-900.jpg" alt="Geometric abstract graphic representing AI and automation" loading="lazy" decoding="async" width="900" height="675"></picture></div>
       <div class="split mt-3 reveal-up">
         <div>
-          <h4>What&rsquo;s included</h4>
+          <h3 class="h-sub">What&rsquo;s included</h3>
           <div class="service-list mt-2">
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Workflow automation for the repetitive work eating your week</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>AI consulting — where to start, and where not to</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>Team training &amp; certification, so the knowledge stays in-house</div>
-            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8l2.5 2.5L12 4"/></svg>AI-powered business solutions, including dashboards and CRM</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Workflow automation for the repetitive work eating your week</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>AI consulting — where to start, and where not to</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>Team training &amp; certification, so the knowledge stays in-house</div>
+            <div class="item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 8l2.5 2.5L12 4"/></svg>AI-powered business solutions, including dashboards and CRM</div>
           </div>
         </div>
         <div>
-          <h4>Talk to us if</h4>
+          <h3 class="h-sub">Talk to us if</h3>
           <p class="text-soft">Manual work is eating hours your team could spend elsewhere, and you want a responsible place to start.</p>
         </div>
       </div>
-      <a class="btn btn-secondary mt-3" href="contact.html">Talk about AI &amp; automation</a>
+      <a class="btn btn-secondary mt-3" href="contact.html">Talk about AI &amp; automation <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </section>
 
   <section class="bg-navy cta-band">
     <div class="container">
       <div class="cta-row">
-        <h2>Not sure which discipline you need?</h2>
+        <h2 class="reveal-up">Not sure which discipline you need?</h2>
         <div>
-          <p class="text-soft" style="margin-bottom:1.4rem;max-width:38ch">Most of the work we do draws on more than one. Tell us the problem and we&rsquo;ll help you shape the approach — free of charge.</p>
-          <a class="btn btn-primary" href="contact.html">Let&rsquo;s talk. &rarr;</a>
+          <p class="text-soft">Most of the work we do draws on more than one. Tell us the problem and we&rsquo;ll help you shape the approach — free of charge.</p>
+          <a class="btn btn-primary" href="contact.html">Let&rsquo;s talk <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
         </div>
       </div>
     </div>
   </section>
 </main>
 
-<footer id="site-footer"></footer>
-<script src="js/site.js"></script>
+<footer id="site-footer" class="site-footer bg-navy">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="114" height="28" loading="lazy">
+        <p>Your digital partner for the AI age. Growth, build, creative and AI — one expert team, built in Nepal for ambitious brands worldwide.</p>
+        <p><a class="footer-link" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a></p>
+      </div>
+      <div>
+        <h2>Capabilities</h2>
+        <ul>
+          <li><a href="services.html#build">Digital Build</a></li>
+          <li><a href="services.html#growth">Digital Growth</a></li>
+          <li><a href="services.html#creative">Creative</a></li>
+          <li><a href="services.html#ai">AI &amp; Automation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Company</h2>
+        <ul>
+          <li><a href="work.html">Work</a></li>
+          <li><a href="insights.html">Insights</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="team.html">Team</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Get in touch</h2>
+        <ul>
+          <li><a href="contact.html">Contact us</a></li>
+          <li><a href="mailto:hello@cognimorph.co">Email</a></li>
+          <li><a href="https://www.linkedin.com/company/cognimorph" target="_blank" rel="noopener">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="footer-disclaimer">Figures and case studies shown on this site are illustrative samples while client approvals are finalised. Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
+    <div class="footer-bottom">
+      <span>&copy; <span id="footer-year">2026</span> Cognimorph. All rights reserved.</span>
+      <div class="footer-bottom-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="#main">Back to top &uarr;</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="js/site.min.js" defer></script>
 </body>
 </html>

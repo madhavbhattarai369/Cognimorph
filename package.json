@@ -1,0 +1,14 @@
+{
+  "name": "cognimorph-website",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Cognimorph marketing site \u2014 static HTML, CSS and vanilla JS.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npx --yes http-server . -p 8080 -c-1",
+    "dev": "npm run build && npm start"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

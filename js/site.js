@@ -1,925 +1,581 @@
 // Cognimorph — shared site behaviour
+// Source file. Pages load js/site.min.js — run `npm run build` after editing.
 (function(){
+  'use strict';
+
   var root = document.documentElement;
+  root.classList.add('js');
 
-  function getStoredTheme(){
-    try{ return localStorage.getItem('cognimorph-theme'); }catch(e){ return null; }
-  }
+  // ---- Site-wide settings -------------------------------------------------
+  var CONFIG = {
+    // Every "Contact / Let's talk / Start a project" CTA goes to the contact page,
+    // i.e. https://cognimorph.co/contact.html once deployed. (Header/footer links
+    // are rendered by scripts/build.mjs — keep the two in step.)
+    contactUrl: 'contact.html',
+    email: 'hello@cognimorph.co',
+    linkedin: 'https://www.linkedin.com/company/cognimorph',
+    // WhatsApp business number in international format, digits only (e.g. '9779800000000').
+    // Leave empty to hide every WhatsApp button until a real number is confirmed.
+    whatsapp: ''
+  };
+  // Pages outside the site root (thank-you/, 404) declare data-root so shared links resolve
+  var ROOT_PATH = root.getAttribute('data-root') || '';
+  function u(href){ return /^(https?:|mailto:|tel:|#|\/)/.test(href) ? href : ROOT_PATH + href; }
+  CONFIG.contactUrl = u(CONFIG.contactUrl);
+
+  var WA_LINK = CONFIG.whatsapp
+    ? 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent('Hello Cognimorph, I have a question about ')
+    : '';
+
+  var mq = function(q){ return window.matchMedia ? window.matchMedia(q).matches : false; };
+  var reducedMotion = mq('(prefers-reduced-motion: reduce)');
+  var finePointer = mq('(hover: hover) and (pointer: fine)');
+  var hasIO = 'IntersectionObserver' in window;
+
+  // ---- Theme ----------------------------------------------------------------
   function storeTheme(v){
-    try{ localStorage.setItem('cognimorph-theme', v); }catch(e){ /* ignore */ }
+    try{ localStorage.setItem('cognimorph-theme', v); }catch(e){ /* storage unavailable */ }
   }
-  var stored = getStoredTheme();
-  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  root.setAttribute('data-theme', stored || (prefersDark ? 'dark' : 'light'));
-
+  // (the inline <head> snippet applies the saved theme before first paint; this is the fallback)
+  var stored = null;
+  try{ stored = localStorage.getItem('cognimorph-theme'); }catch(e){ /* ignore */ }
+  root.setAttribute('data-theme', stored || (mq('(prefers-color-scheme: dark)') ? 'dark' : 'light'));
   function toggleTheme(){
     var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
     storeTheme(next);
+    syncThemeButton();
+  }
+  function syncThemeButton(){
+    var b = document.getElementById('theme-toggle');
+    if(!b) return;
+    var dark = root.getAttribute('data-theme') === 'dark';
+    b.setAttribute('aria-pressed', String(dark));
+    b.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
   }
 
-  var NAV_LINKS = [
-    { href: 'services.html', label: 'Services' },
-    { href: 'work.html', label: 'Work' },
-    { href: 'insights.html', label: 'Insights' },
-    { href: 'about.html', label: 'About' },
-    { href: 'team.html', label: 'Team' }
-  ];
-
-  var FOOTER_COLUMNS = [
-    {
-      title: 'Capabilities',
-      links: [
-        { href: 'services.html#build', label: 'Digital Build' },
-        { href: 'services.html#growth', label: 'Digital Growth' },
-        { href: 'services.html#creative', label: 'Creative' },
-        { href: 'services.html#ai', label: 'AI & Automation' }
-      ]
-    },
-    {
-      title: 'Company',
-      links: [
-        { href: 'work.html', label: 'Work' },
-        { href: 'insights.html', label: 'Insights' },
-        { href: 'about.html', label: 'About' },
-        { href: 'team.html', label: 'Team' }
-      ]
-    },
-    {
-      title: 'Get in touch',
-      links: [
-        { href: 'contact.html', label: 'Contact' },
-        { href: 'https://www.linkedin.com/company/cognimorph', label: 'LinkedIn' }
-      ]
-    }
-  ];
-
-  function iconMoon(){
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-moon"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>';
-  }
-  function iconSun(){
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-sun"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>';
+  // ---- Utilities ------------------------------------------------------------
+  // One IntersectionObserver per behaviour; `once` unobserves after first hit.
+  function observe(els, cb, opts){
+    els = Array.prototype.slice.call(els);
+    if(!els.length) return;
+    if(!hasIO){ els.forEach(function(el){ cb(el, true); }); return; }
+    var once = !opts || opts.once !== false;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(once){
+          if(en.isIntersecting){ cb(en.target, true); io.unobserve(en.target); }
+        } else {
+          cb(en.target, en.isIntersecting);
+        }
+      });
+    }, { threshold: (opts && opts.threshold) || 0, rootMargin: (opts && opts.rootMargin) || '0px 0px -8% 0px' });
+    els.forEach(function(el){ io.observe(el); });
   }
 
-  function buildHeader(current){
-    var links = NAV_LINKS.map(function(l){
-      var cur = (l.href === current) ? ' aria-current="page"' : '';
-      return '<a href="' + l.href + '"' + cur + '>' + l.label + '</a>';
-    }).join('');
-
-    var mobileLinks = NAV_LINKS.map(function(l, i){
-      var num = ('0' + (i + 1)).slice(-2);
-      return '<a href="' + l.href + '"><span class="mnum">' + num + '</span>' + l.label + '</a>';
-    }).join('');
-
-    var homeHref = (current === 'index.html') ? 'index.html' : 'index.html';
-
-    return (
-    '<div class="site-header">' +
-      '<div class="container nav-row">' +
-        '<a class="brand" href="' + homeHref + '" aria-label="Cognimorph home">' +
-          '<img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph">' +
-          '<img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph">' +
-        '</a>' +
-        '<nav class="nav-links" aria-label="Primary">' + links + '</nav>' +
-        '<div class="nav-right">' +
-          '<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">' + iconMoon() + iconSun() + '</button>' +
-          '<a class="btn btn-primary" id="nav-cta" href="contact.html">Let&rsquo;s talk.</a>' +
-          '<button class="menu-toggle" id="menu-open" aria-label="Open menu">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/></svg>' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="mobile-menu" id="mobile-menu">' +
-      '<div class="mobile-menu-top">' +
-        '<a class="brand" href="' + homeHref + '">' +
-          '<img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph">' +
-          '<img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph">' +
-        '</a>' +
-        '<button class="mobile-menu-close" id="menu-close" aria-label="Close menu">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 5l14 14M19 5L5 19"/></svg>' +
-        '</button>' +
-      '</div>' +
-      '<nav class="mobile-menu-links" aria-label="Mobile">' + mobileLinks + '</nav>' +
-      '<a class="btn btn-primary mobile-menu-cta" href="contact.html">Let&rsquo;s talk.</a>' +
-    '</div>'
-    );
+  // Frame-throttled scroll work shared by every scroll-linked effect
+  var scrollTasks = [];
+  var scrollQueued = false;
+  function onScrollFrame(fn){ scrollTasks.push(fn); }
+  function runScrollTasks(){
+    scrollQueued = false;
+    var y = window.pageYOffset, vh = window.innerHeight;
+    for(var i = 0; i < scrollTasks.length; i++) scrollTasks[i](y, vh);
   }
-
-  function buildFooter(){
-    var cols = FOOTER_COLUMNS.map(function(col){
-      var items = col.links.map(function(l){
-        return '<li><a href="' + l.href + '">' + l.label + '</a></li>';
-      }).join('');
-      return '<div><h5>' + col.title + '</h5><ul>' + items + '</ul></div>';
-    }).join('');
-
-    return (
-    '<div class="container">' +
-      '<div class="footer-top">' +
-        '<div class="footer-brand">' +
-          '<img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" style="height:26px">' +
-          '<p>Your digital partner for the AI age. Growth, build, creative and AI — one expert team, built in Nepal for ambitious brands worldwide.</p>' +
-          '<p style="margin-top:0.8rem"><a href="mailto:hello@cognimorph.co" style="color:rgba(244,239,228,0.85)">hello@cognimorph.co</a></p>' +
-        '</div>' +
-        cols +
-      '</div>' +
-      '<p class="footer-disclaimer">Figures and case studies shown on this site are illustrative samples while client approvals are finalised. Results depend on budget, market and creative; no agency can guarantee a specific return.</p>' +
-      '<div class="footer-bottom">' +
-        '<span>&copy; <span id="footer-year"></span> Cognimorph. All rights reserved.</span>' +
-        '<div class="footer-bottom-links">' +
-          '<a href="https://www.linkedin.com">LinkedIn</a>' +
-          '<a href="privacy.html">Privacy</a>' +
-          '<a href="terms.html">Terms</a>' +
-        '</div>' +
-      '</div>' +
-    '</div>'
-    );
+  function queueScroll(){
+    if(!scrollQueued){ scrollQueued = true; requestAnimationFrame(runScrollTasks); }
   }
+  window.addEventListener('scroll', queueScroll, { passive: true });
+  window.addEventListener('resize', queueScroll);
 
+  // Expose the small toolkit to page scripts (home.js)
+  window.Cognimorph = {
+    config: CONFIG,
+    reducedMotion: reducedMotion,
+    finePointer: finePointer,
+    observe: observe,
+    onScrollFrame: onScrollFrame,
+    queueScroll: queueScroll
+  };
+
+  // ---- Init -------------------------------------------------------------------
   function init(){
-    var path = window.location.pathname.split('/').pop() || 'index.html';
-    var headerEl = document.getElementById('site-header');
-    var footerEl = document.getElementById('site-footer');
-    if(headerEl){ headerEl.innerHTML = buildHeader(path); }
-    if(footerEl){ footerEl.className = 'site-footer bg-navy'; footerEl.innerHTML = buildFooter(); }
+    // Header and footer markup is rendered into each page by scripts/build.mjs
+    var yearEl = document.getElementById('footer-year');
+    if(yearEl){ yearEl.textContent = new Date().getFullYear(); }
 
-    // WhatsApp — replace with the real business number before launch (international format, no +, no spaces)
-    var WA_NUMBER = '9771000000000';
-    var WA_LINK = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent('Hello Cognimorph, I have a question about ');
+    var toggleBtn = document.getElementById('theme-toggle');
+    if(toggleBtn){ toggleBtn.addEventListener('click', toggleTheme); syncThemeButton(); }
 
-    // Assistant widget — injected once, on every page
-    if(!document.getElementById('asst-btn')){
-      var asstWrap = document.createElement('div');
-      asstWrap.innerHTML =
-        '<button class="asst-btn" id="asst-btn" aria-expanded="false" aria-controls="asst-panel" aria-label="Open questions panel">'
-        + '<svg class="ic-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.1-4.3A8.5 8.5 0 1 1 20.5 12Z"/><path d="M8.5 10.5h7M8.5 14h4.5"/></svg>'
-        + '<svg class="ic-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'
-        + '</button>'
-        + '<div class="asst-panel" id="asst-panel" role="dialog" aria-label="Chat with Cognimorph">'
-        + '<div class="asst-head">'
+    initMenu();
+    initHeaderState();
+    initProgress();
+    initReveals();
+    initParallax();
+    initSpotlight();
+    initAmbientPause();
+    initContactForm();
+    initAssistant();
+
+    var brand = document.querySelector('.site-header .brand');
+    if(brand && !reducedMotion){
+      setTimeout(function(){
+        brand.classList.add('sheen');
+        setTimeout(function(){ brand.classList.remove('sheen'); }, 1400);
+      }, 1600);
+    }
+  }
+
+  // ---- Mobile menu: focus-trapped dialog ---------------------------------------
+  function initMenu(){
+    var openBtn = document.getElementById('menu-open');
+    var closeBtn = document.getElementById('menu-close');
+    var menu = document.getElementById('mobile-menu');
+    if(!openBtn || !menu) return;
+
+    function focusables(){
+      return Array.prototype.slice.call(menu.querySelectorAll('a[href], button:not([disabled])'));
+    }
+    function setOpen(open){
+      menu.classList.toggle('open', open);
+      openBtn.setAttribute('aria-expanded', String(open));
+      document.body.style.overflow = open ? 'hidden' : '';
+      if(open){
+        menu.removeAttribute('inert');
+        setTimeout(function(){ if(closeBtn) closeBtn.focus(); }, 60);
+      } else {
+        menu.setAttribute('inert', '');
+        openBtn.focus({ preventScroll: true });
+      }
+    }
+    openBtn.addEventListener('click', function(){ setOpen(true); });
+    if(closeBtn) closeBtn.addEventListener('click', function(){ setOpen(false); });
+    menu.addEventListener('click', function(e){
+      if(e.target.closest('a')) setOpen(false);
+    });
+    menu.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){ setOpen(false); return; }
+      if(e.key !== 'Tab') return;
+      var f = focusables();
+      if(!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    });
+    // Close if the viewport grows past the mobile breakpoint
+    if(window.matchMedia){
+      var wide = window.matchMedia('(min-width: 881px)');
+      var onWide = function(e){ if(e.matches && menu.classList.contains('open')) setOpen(false); };
+      if(wide.addEventListener) wide.addEventListener('change', onWide);
+    }
+  }
+
+  // ---- Header gains depth once the page scrolls ---------------------------------
+  function initHeaderState(){
+    var header = document.getElementById('site-header');
+    if(!header) return;
+    var last = null;
+    onScrollFrame(function(y){
+      var s = y > 8;
+      if(s !== last){ header.classList.toggle('is-scrolled', s); last = s; }
+    });
+    queueScroll();
+  }
+
+  // ---- Reading progress (transform only) ------------------------------------------
+  function initProgress(){
+    var bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(bar);
+    var max = 1;
+    function measure(){ max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
+    requestAnimationFrame(measure);
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    onScrollFrame(function(y){ bar.style.transform = 'scaleX(' + Math.min(1, y / max).toFixed(4) + ')'; });
+  }
+
+  // ---- Scroll reveals -----------------------------------------------------------
+  // Split section headings into words so they can rise line by line.
+  function splitWords(el){
+    var wi = 0;
+    function walk(node){
+      Array.prototype.slice.call(node.childNodes).forEach(function(child){
+        if(child.nodeType === 3){
+          var parts = child.textContent.split(/(\s+)/);
+          var frag = document.createDocumentFragment();
+          parts.forEach(function(p){
+            if(!p) return;
+            if(/^\s+$/.test(p)){ frag.appendChild(document.createTextNode(p)); return; }
+            var w = document.createElement('span');
+            w.className = 'w';
+            var inner = document.createElement('span');
+            inner.style.setProperty('--wi', wi++);
+            inner.textContent = p;
+            w.appendChild(inner);
+            frag.appendChild(w);
+          });
+          child.parentNode.replaceChild(frag, child);
+        } else if(child.nodeType === 1 && child.tagName !== 'BR'){
+          walk(child);
+        }
+      });
+    }
+    el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
+    walk(el);
+    Array.prototype.slice.call(el.querySelectorAll('.w')).forEach(function(w){ w.setAttribute('aria-hidden', 'true'); });
+    el.classList.add('split-words');
+  }
+
+  function initReveals(){
+    var main = document.getElementById('main');
+    if(!main) return;
+
+    // Interior page titles and section headings rise word by word
+    Array.prototype.slice.call(main.querySelectorAll('h2.reveal-up, .page-header h1, [data-split]')).forEach(function(h){
+      if(!reducedMotion) splitWords(h);
+      h.classList.add('reveal-up');
+    });
+    Array.prototype.slice.call(main.querySelectorAll('.eyebrow:not(.hero-rise)')).forEach(function(e){ e.classList.add('reveal-eyebrow'); });
+
+    var els = main.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-scale, .reveal-media, .reveal-eyebrow, section.hairline, .approach-row, .anim-panel');
+    if(reducedMotion){
+      Array.prototype.forEach.call(els, function(el){ el.classList.add('is-visible'); });
+      return;
+    }
+    // The huge top margin means anything the reader has already scrolled past
+    // (fast flicks, anchor jumps, restored scroll) is revealed rather than left hidden.
+    observe(els, function(el){ el.classList.add('is-visible'); }, { rootMargin: '100000px 0px -10% 0px' });
+
+    // Anything already in view on load (e.g. page headers) appears straight away
+    requestAnimationFrame(function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.page-header .reveal-up'), function(el){ el.classList.add('is-visible'); });
+    });
+  }
+
+  // ---- Parallax on framed imagery (desktop, visible elements only) -----------------
+  function initParallax(){
+    if(reducedMotion || !mq('(min-width: 901px)')) return;
+    var items = Array.prototype.slice.call(document.querySelectorAll('.media-parallax img, .band-media img'));
+    if(!items.length) return;
+    var live = new Set();
+    observe(items.map(function(img){ return img.parentElement.closest('.media-parallax, .band') || img.parentElement; }), function(el, inView){
+      if(inView) live.add(el); else live.delete(el);
+      queueScroll();
+    }, { once: false, rootMargin: '120px 0px 120px 0px' });
+    onScrollFrame(function(y, vh){
+      live.forEach(function(box){
+        var r = box.getBoundingClientRect();
+        var delta = ((r.top + r.height / 2) - vh / 2) / vh; // -1 .. 1
+        var img = box.querySelector('img');
+        var isBand = box.classList.contains('band');
+        var amt = isBand ? -60 : -24;
+        img.style.transform = (isBand ? '' : 'scale(1.1) ') + 'translate3d(0,' + (delta * amt).toFixed(1) + 'px,0)';
+      });
+    });
+  }
+
+  // ---- Pointer spotlight on cards (fine pointers only) ----------------------------
+  function initSpotlight(){
+    if(!finePointer || reducedMotion) return;
+    Array.prototype.forEach.call(document.querySelectorAll('.ind, .case-card, .case-full, .metric-cell'), function(card){
+      card.classList.add('spot');
+      card.addEventListener('pointermove', function(e){
+        var r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
+  }
+
+  // ---- Pause looping panel animations when off-screen -----------------------------
+  function initAmbientPause(){
+    var loops = document.querySelectorAll('.anim-panel');
+    observe(loops, function(el, inView){ el.classList.toggle('is-paused', !inView); }, { once: false });
+  }
+
+  // ---- Contact form: posts to hello@cognimorph.co, then redirects to the thank-you page
+  // Without JS the form posts natively and FormSubmit follows the hidden `_next` field.
+  function initContactForm(){
+    var form = document.getElementById('contact-form');
+    if(!form || !window.fetch) return;
+    var status = document.getElementById('form-status');
+    var btn = document.getElementById('contact-submit');
+    var label = btn && btn.querySelector('.btn-label');
+    var redirect = form.getAttribute('data-redirect');
+
+    function fail(){
+      btn.disabled = false;
+      label.textContent = 'Send enquiry';
+      status.innerHTML = 'That didn’t send. Please email '
+        + '<a href="mailto:' + CONFIG.email + '" class="text-link">' + CONFIG.email + '</a> directly and we’ll pick it up.';
+    }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      if(!form.reportValidity()) return;
+      btn.disabled = true;
+      label.textContent = 'Sending…';
+      status.textContent = '';
+
+      var payload = {};
+      new FormData(form).forEach(function(v, k){ payload[k] = v; });
+
+      fetch(form.getAttribute('data-ajax-action'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function(r){ if(!r.ok) throw new Error('rejected'); return r.json().catch(function(){ return {}; }); })
+      .then(function(data){
+        if(data && (data.success === false || data.success === 'false')) throw new Error('rejected');
+        window.location.assign(redirect);
+      })
+      .catch(fail);
+    });
+  }
+
+  // ---- Conversational assistant (panel built on first open) -------------------------
+  var OPENERS = ['services','pricing','start','human'];
+  var TOPICS = {
+    services: {
+      q:'What do you do?',
+      a:'Four things, run by one team:\n\n• Digital growth — performance marketing, paid social and search, SEO\n• Digital build — websites, apps and software\n• Creative — video, design and CGI\n• AI and automation\n\nMost clients use more than one.',
+      next:['growth','build','creative','ai','pricing']
+    },
+    pricing: {
+      q:'How much does it cost?',
+      a:'We quote per project rather than publishing rate cards, because scope varies a lot.\n\nMost engagements begin with a short paid discovery, then a fixed scope. Growth and maintenance usually run as a monthly retainer.\n\nTell us the problem and we will come back with a number.',
+      next:['start','retainers','human']
+    },
+    start: {
+      q:'How do we get started?',
+      a:'Send us a brief and we will reply within one business day, then set up a call to understand the problem before proposing anything.\n\nYou can use the contact form, or email ' + CONFIG.email + ' directly.',
+      next:['human','timeline','services'],
+      cta:true
+    },
+    human: {
+      q:'I want to talk to a person',
+      a:'Of course. Send your question through the contact form or by email and a member of the team will reply within one business day.',
+      next:['start','pricing'],
+      human:true
+    },
+    growth: {
+      q:'Tell me about digital growth',
+      a:'We plan, buy and optimise paid media across Meta, Google, YouTube, TikTok, LinkedIn, Reddit, X, Snapchat, Pinterest and Spotify, plus programmatic through StackAdapt.\n\nSEO and AEO and social media management sit alongside, so the channels support each other.',
+      next:['pricing','platforms','start']
+    },
+    build: {
+      q:'Tell me about digital build',
+      a:'Websites, web apps, mobile apps and internal software — designed around how people actually behave, then built to stay fast and easy for your team to run.\n\nWe stay on for maintenance rather than handing over and disappearing.',
+      next:['pricing','start','services']
+    },
+    creative: {
+      q:'Tell me about creative',
+      a:'Video editing, graphic design, CGI and AI video, produced in-house.\n\nWe plan for multi-format capture up front, so one production day covers hero film, short-form cutdowns and stills rather than needing three shoots.',
+      next:['pricing','start','services']
+    },
+    ai: {
+      q:'Tell me about AI and automation',
+      a:'Two things. We automate the repetitive work inside your business — document handling, reporting, data entry — and we train your team to run and extend it themselves.\n\nWe also use AI in our own production and research, which is why our output holds up.',
+      next:['pricing','start','services']
+    },
+    platforms: {
+      q:'Which ad platforms do you run?',
+      a:'Meta, Google, YouTube, TikTok, LinkedIn, Reddit, X, Snapchat, Pinterest and Spotify, plus programmatic buying through StackAdapt.\n\nWe also handle the tracking behind them — GA4, Tag Manager, Meta CAPI and server-side events.',
+      next:['growth','pricing','start']
+    },
+    industries: {
+      q:'Which industries do you know?',
+      a:'SaaS and B2B, e-commerce and retail, yoga and wellness, beauty and personal care, FMCG, and real estate.\n\nIf your sector is not on that list, ask — the fundamentals usually transfer.',
+      next:['services','start']
+    },
+    retainers: {
+      q:'Do you work on retainer?',
+      a:'Yes. Growth and maintenance work almost always runs monthly.\n\nBuild and creative projects are usually fixed scope, and often continue as a retainer once live.',
+      next:['pricing','start']
+    },
+    timeline: {
+      q:'How long do projects take?',
+      a:'A marketing site is typically four to six weeks. An app build runs three to five months. Growth campaigns go live within two to three weeks of kickoff, then improve continuously.\n\nWe will give you a real timeline once we know the scope.',
+      next:['pricing','start']
+    },
+    where: {
+      q:'Where are you based?',
+      a:'We are registered in Nepal and work out of Kathmandu, serving clients across South Asia, the Gulf, the UK and Singapore.',
+      next:['services','start']
+    }
+  };
+  var ROUTES = [
+    [/\b(price|pricing|cost|budget|quote|rate|charge|fee)\b/i, 'pricing'],
+    [/\b(human|person|someone|talk|call|speak|agent|team member)\b/i, 'human'],
+    [/\b(whatsapp|phone|number|contact|email|reach)\b/i, 'human'],
+    [/\b(start|begin|kick ?off|onboard|hire|work with|brief)\b/i, 'start'],
+    [/\b(seo|aeo|ads?|advertis|meta|google|tiktok|linkedin|paid|ppc|campaign|marketing|media buy)\b/i, 'growth'],
+    [/\b(platform|channel)\b/i, 'platforms'],
+    [/\b(web ?site|app|develop|build|software|shopify|wordpress|code)\b/i, 'build'],
+    [/\b(video|creative|design|cgi|edit|graphic|brand|logo)\b/i, 'creative'],
+    [/\b(ai|automat|workflow|n8n|chatbot|train)\b/i, 'ai'],
+    [/\b(industr|sector|niche|saas|ecommerce|e-commerce|retail|beauty|fmcg|real estate|wellness|yoga)\b/i, 'industries'],
+    [/\b(retainer|monthly|ongoing|contract)\b/i, 'retainers'],
+    [/\b(how long|timeline|duration|when|deadline|fast|quick)\b/i, 'timeline'],
+    [/\b(where|located|location|based|nepal|kathmandu|office)\b/i, 'where'],
+    [/\b(what do you do|services?|offer|capabilit)\b/i, 'services']
+  ];
+
+  function initAssistant(){
+    if(document.getElementById('asst-btn')) return;
+    var wrap = document.createElement('div');
+    wrap.innerHTML =
+      '<button type="button" class="asst-btn" id="asst-btn" aria-expanded="false" aria-controls="asst-panel" aria-label="Open questions panel">'
+      + '<svg class="ic-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.1-4.3A8.5 8.5 0 1 1 20.5 12Z"/><path d="M8.5 10.5h7M8.5 14h4.5"/></svg>'
+      + '<svg class="ic-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+      + '</button>'
+      + (WA_LINK ? '<a class="wa-btn" href="' + WA_LINK + '" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">'
+      + '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.22 3.08.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.78 9.78 0 0 1-1.5-5.22c0-5.4 4.41-9.8 9.82-9.8a9.75 9.75 0 0 1 6.94 2.88 9.72 9.72 0 0 1 2.87 6.93c0 5.4-4.41 9.81-9.82 9.81M20.52 3.45A11.67 11.67 0 0 0 12.05 0C5.6 0 .35 5.25.34 11.7c0 2.06.54 4.07 1.56 5.85L.24 24l6.6-1.73a11.7 11.7 0 0 0 5.2 1.24h.01c6.45 0 11.7-5.25 11.7-11.7 0-3.13-1.21-6.07-3.43-8.28"/></svg></a>' : '');
+    while(wrap.firstChild){ document.body.appendChild(wrap.firstChild); }
+
+    var btn = document.getElementById('asst-btn');
+    var panel, log, chips, form, input, started = false;
+
+    function buildPanel(){
+      var p = document.createElement('div');
+      p.className = 'asst-panel';
+      p.id = 'asst-panel';
+      p.setAttribute('role', 'dialog');
+      p.setAttribute('aria-label', 'Chat with Cognimorph');
+      p.innerHTML =
+        '<div class="asst-head">'
         +   '<span class="av-dot" aria-hidden="true"></span>'
-        +   '<div class="asst-id"><strong>Cognimorph</strong><span id="asst-sub">Typically replies in a few minutes</span></div>'
-        +   '<button class="asst-min" id="asst-min" aria-label="Minimise chat">'
-        +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 14h12"/></svg>'
+        +   '<div class="asst-id"><strong>Cognimorph</strong><span>Answers to common questions</span></div>'
+        +   '<button type="button" class="asst-min" id="asst-min" aria-label="Close chat">'
+        +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 14h12"/></svg>'
         +   '</button>'
         + '</div>'
         + '<div class="asst-log" id="asst-log" role="log" aria-live="polite"></div>'
         + '<div class="asst-chips" id="asst-chips"></div>'
         + '<form class="asst-composer" id="asst-composer">'
-        +   '<input id="asst-input" type="text" autocomplete="off" placeholder="Write a message\u2026" aria-label="Write a message">'
+        +   '<input id="asst-input" type="text" autocomplete="off" placeholder="Write a message…" aria-label="Write a message">'
         +   '<button type="submit" aria-label="Send message">'
-        +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h13M12 5.5 18.5 12 12 18.5"/></svg>'
+        +     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12h13M12 5.5 18.5 12 12 18.5"/></svg>'
         +   '</button>'
-        + '</form>'
-        + '</div>'
-        + '<a class="wa-btn" href="' + WA_LINK + '" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">'
-        + '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.22 3.08.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.71.97.99-3.62-.23-.37a9.78 9.78 0 0 1-1.5-5.22c0-5.4 4.41-9.8 9.82-9.8a9.75 9.75 0 0 1 6.94 2.88 9.72 9.72 0 0 1 2.87 6.93c0 5.4-4.41 9.81-9.82 9.81M20.52 3.45A11.67 11.67 0 0 0 12.05 0C5.6 0 .35 5.25.34 11.7c0 2.06.54 4.07 1.56 5.85L.24 24l6.6-1.73a11.7 11.7 0 0 0 5.2 1.24h.01c6.45 0 11.7-5.25 11.7-11.7 0-3.13-1.21-6.07-3.43-8.28"/></svg>'
-        + '</a>';
-      while(asstWrap.firstChild){ document.body.appendChild(asstWrap.firstChild); }
-    }
-
-    var yearEl = document.getElementById('footer-year');
-    if(yearEl){ yearEl.textContent = new Date().getFullYear(); }
-
-    var toggleBtn = document.getElementById('theme-toggle');
-    if(toggleBtn){ toggleBtn.addEventListener('click', toggleTheme); }
-
-    var menuOpen = document.getElementById('menu-open');
-    var menuClose = document.getElementById('menu-close');
-    var mobileMenu = document.getElementById('mobile-menu');
-    if(menuOpen && mobileMenu){
-      menuOpen.addEventListener('click', function(){
-        mobileMenu.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      });
-    }
-    if(menuClose && mobileMenu){
-      menuClose.addEventListener('click', function(){
-        mobileMenu.classList.remove('open');
-        document.body.style.overflow = '';
-      });
-    }
-    if(mobileMenu){
-      mobileMenu.querySelectorAll('a').forEach(function(a){
-        a.addEventListener('click', function(){
-          mobileMenu.classList.remove('open');
-          document.body.style.overflow = '';
-        });
-      });
-    }
-
-    // Hero typewriter — writes and rewrites a rotating phrase
-    var typeEl = document.getElementById('hero-type');
-    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(typeEl){
-      var phrases = (typeEl.getAttribute('data-phrases') || '').split('|').filter(Boolean);
-      if(reducedMotion || phrases.length === 0){
-        typeEl.textContent = phrases[0] || typeEl.textContent;
-      } else {
-        var pIndex = 0, charIndex = 0, deleting = false;
-        var TYPE_SPEED = 42, DELETE_SPEED = 26, HOLD = 1500, GAP = 350;
-        function tick(){
-          var current = phrases[pIndex];
-          if(!deleting){
-            charIndex++;
-            typeEl.textContent = current.slice(0, charIndex);
-            if(charIndex === current.length){
-              deleting = true;
-              setTimeout(tick, HOLD);
-              return;
-            }
-            setTimeout(tick, TYPE_SPEED);
-          } else {
-            charIndex--;
-            typeEl.textContent = current.slice(0, charIndex);
-            if(charIndex === 0){
-              deleting = false;
-              pIndex = (pIndex + 1) % phrases.length;
-              setTimeout(tick, GAP);
-              return;
-            }
-            setTimeout(tick, DELETE_SPEED);
-          }
-        }
-        tick();
-      }
-    }
-
-    // Subtle single parallax moment on the hero graphic
-    var heroVisual = document.querySelector('.hero-visual');
-    if(heroVisual && !reducedMotion && window.matchMedia('(min-width: 901px)').matches){
-      document.addEventListener('mousemove', function(e){
-        var x = (e.clientX / window.innerWidth - 0.5) * 10;
-        var y = (e.clientY / window.innerHeight - 0.5) * 10;
-        heroVisual.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-      });
-    }
-
-    // Headline line-by-line reveal on load
-    var lineHost = document.querySelector('.line-host');
-    if(lineHost){ setTimeout(function(){ lineHost.classList.add('line-in'); }, 120); }
-
-    // Scroll progress bar
-    var bar = document.createElement('div');
-    bar.className = 'scroll-progress';
-    document.body.appendChild(bar);
-    function updateBar(){
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      var pct = max > 0 ? (window.scrollY / max) * 100 : 0;
-      bar.style.width = pct + '%';
-    }
-    window.addEventListener('scroll', updateBar, { passive: true });
-    updateBar();
-
-    // Parallax on media images (scroll-driven, subtle)
-    var parallaxEls = Array.prototype.slice.call(document.querySelectorAll('.media-parallax img'));
-    function runParallax(){
-      if(reducedMotion) return;
-      parallaxEls.forEach(function(img){
-        var box = img.parentElement.getBoundingClientRect();
-        if(box.bottom < -200 || box.top > window.innerHeight + 200) return;
-        var mid = box.top + box.height/2;
-        var delta = (mid - window.innerHeight/2) / window.innerHeight;
-        img.style.transform = 'scale(1.12) translateY(' + (delta * -26).toFixed(2) + 'px)';
-      });
-    }
-    window.addEventListener('scroll', runParallax, { passive: true });
-    window.addEventListener('resize', runParallax);
-    runParallax();
-
-    // Subtle 3D tilt on pointer (desktop only)
-    if(!reducedMotion && window.matchMedia('(min-width: 901px)').matches){
-      document.querySelectorAll('.tilt').forEach(function(el){
-        var wrap = el.closest('.tilt-wrap') || el;
-        wrap.addEventListener('mousemove', function(e){
-          var r = wrap.getBoundingClientRect();
-          var px = (e.clientX - r.left) / r.width - 0.5;
-          var py = (e.clientY - r.top) / r.height - 0.5;
-          el.style.transform = 'rotateY(' + (px * 7).toFixed(2) + 'deg) rotateX(' + (-py * 7).toFixed(2) + 'deg) translateZ(0)';
-        });
-        wrap.addEventListener('mouseleave', function(){
-          el.style.transform = '';
-        });
-      });
-    }
-
-    // Client marquee — colour-coded brand cards, duplicated for a seamless loop
-    var BRANDS = [
-      { n:'Himalaya Organics',   s:'Nepal',     c:'#155E91' },
-      { n:'Kathmandu Coffee Co.',s:'Nepal',     c:'#E96A24' },
-      { n:'Everest Logistics',   s:'Nepal',     c:'#102A3A' },
-      { n:'Sagarmatha Fintech',  s:'Nepal',     c:'#2C7CB0' },
-      { n:'Meridian Retail',     s:'UAE',       c:'#155E91' },
-      { n:'Northwind Studios',   s:'UK',        c:'#B4531B' },
-      { n:'Lumen Health',        s:'Singapore', c:'#102A3A' },
-      { n:'Atlas Interiors',     s:'Qatar',     c:'#2C7CB0' }
-    ];
-    var track = document.getElementById('marquee-track');
-    if(track){
-      var chip = function(b){
-        var initials = b.n.split(' ').slice(0,2).map(function(w){ return w[0]; }).join('');
-        return '<div class="brand-chip" tabindex="0">'
-             + '<div class="bx" style="background:' + b.c + '">' + initials + '</div>'
-             + '<div class="bn"><strong>' + b.n + '</strong><span>' + b.s + '</span></div>'
-             + '</div>';
-      };
-      var half = BRANDS.map(chip).join('');
-      track.innerHTML = half + half;
-    }
-
-    // Interactive icon cloud — icons drift away from the cursor, then settle back
-    var CLOUD = [
-      { l:'Social',     x:10, y:12, svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16v11H9l-5 4V6z"/></svg>' },
-      { l:'Growth',     x:55, y:5,  svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 17l5-6 4 4 7-9"/><path d="M15 6h5v5"/></svg>' },
-      { l:'Engagement', x:76, y:36, svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20z"/></svg>' },
-      { l:'Video',      x:6,  y:54, svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M10 9l6 3-6 3z"/></svg>' },
-      { l:'Analytics',  x:42, y:46, svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="14" width="4" height="6"/><rect x="10" y="9" width="4" height="11"/><rect x="16" y="4" width="4" height="16"/></svg>' },
-      { l:'Automation', x:68, y:70, svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg>' },
-      { l:'Audience',   x:24, y:76, svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>' }
-    ];
-    var cloud = document.getElementById('icon-cloud');
-    if(cloud){
-      cloud.innerHTML = CLOUD.map(function(i){
-        return '<span class="ic" style="left:' + i.x + '%;top:' + i.y + '%">'
-             + i.svg + '<span class="ic-label">' + i.l + '</span></span>';
-      }).join('');
-
-      if(!reducedMotion){
-        var ics = Array.prototype.slice.call(cloud.querySelectorAll('.ic'));
-        cloud.addEventListener('mousemove', function(e){
-          ics.forEach(function(ic){
-            var b = ic.getBoundingClientRect();
-            var dx = (b.left + b.width/2) - e.clientX;
-            var dy = (b.top + b.height/2) - e.clientY;
-            var dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            if(dist < 150){
-              var push = (150 - dist) / 150 * 34;
-              ic.style.transform = 'translate(' + (dx/dist*push).toFixed(1) + 'px,' + (dy/dist*push).toFixed(1) + 'px) scale(1.08)';
-            } else {
-              ic.style.transform = '';
-            }
-          });
-        });
-        cloud.addEventListener('mouseleave', function(){
-          ics.forEach(function(ic){ ic.style.transform = ''; });
-        });
-      }
-    }
-
-    // Animated metric counters — count up once, when scrolled into view
-    var counters = document.querySelectorAll('.count');
-    if(counters.length){
-      var runCount = function(el){
-        var target = parseInt(el.getAttribute('data-to'), 10) || 0;
-        if(reducedMotion){ el.textContent = target; return; }
-        var dur = 1500, t0 = null;
-        function step(ts){
-          if(!t0) t0 = ts;
-          var p = Math.min((ts - t0) / dur, 1);
-          var eased = 1 - Math.pow(1 - p, 3);
-          el.textContent = Math.round(target * eased);
-          if(p < 1) requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-      };
-      if('IntersectionObserver' in window){
-        var cio = new IntersectionObserver(function(entries){
-          entries.forEach(function(en){
-            if(en.isIntersecting){ runCount(en.target); cio.unobserve(en.target); }
-          });
-        }, { threshold: 0.5 });
-        counters.forEach(function(el){ cio.observe(el); });
-      } else {
-        counters.forEach(runCount);
-      }
-    }
-
-    // C+M mark — layers drift apart slightly as the pointer moves across the hero
-    var markSvg = document.querySelector('.cm-mark');
-    if(markSvg && !reducedMotion && window.matchMedia('(min-width: 901px)').matches){
-      var cEl = markSvg.querySelector('.cm-c');
-      var p1  = markSvg.querySelector('.peak-1');
-      var p2  = markSvg.querySelector('.peak-2');
-      var stage = markSvg.closest('.hero') || markSvg.parentElement;
-      stage.addEventListener('mousemove', function(e){
-        var r = stage.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - 0.5;
-        var py = (e.clientY - r.top) / r.height - 0.5;
-        if(cEl) cEl.style.transform = 'translate(' + (px*14).toFixed(1) + 'px,' + (py*10).toFixed(1) + 'px)';
-        if(p1)  p1.style.transform  = 'translate(' + (px*22).toFixed(1) + 'px,' + (py*15).toFixed(1) + 'px)';
-        if(p2)  p2.style.transform  = 'translate(' + (px*30).toFixed(1) + 'px,' + (py*20).toFixed(1) + 'px)';
-      });
-      stage.addEventListener('mouseleave', function(){
-        [cEl,p1,p2].forEach(function(el){ if(el) el.style.transform = ''; });
-      });
-    }
-
-    // ---- Tool stack constellation ----
-    // Original icon glyphs drawn in-house. For a production launch you may prefer to
-    // drop in each vendor's official SVG from their brand-asset page.
-    var G = {
-      meta:'<path d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z"/>',
-      instagram:'<path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/>',
-      googleAds:'<path d="M3.9998 22.9291C1.7908 22.9291 0 21.1383 0 18.9293s1.7908-3.9998 3.9998-3.9998 3.9998 1.7908 3.9998 3.9998-1.7908 3.9998-3.9998 3.9998zm19.4643-6.0004L15.4632 3.072C14.3586 1.1587 11.9121.5028 9.9988 1.6074S7.4295 5.1585 8.5341 7.0718l8.0009 13.8567c1.1046 1.9133 3.5511 2.5679 5.4644 1.4646 1.9134-1.1046 2.568-3.5511 1.4647-5.4644zM7.5137 4.8438L1.5645 15.1484A4.5 4.5 0 0 1 4 14.4297c2.5597-.0075 4.6248 2.1585 4.4941 4.7148l3.2168-5.5723-3.6094-6.25c-.4499-.7793-.6322-1.6394-.5878-2.4784z"/>',
-      youtube:'<path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>',
-      tiktok:'<path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>',
-      reddit:'<path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z"/>',
-      x:'<path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/>',
-      snapchat:'<path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/>',
-      pinterest:'<path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/>',
-      spotify:'<path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>',
-      threads:'<path d="M18.263 11.097c-.03-3.486-1.92-5.586-5.111-5.586-2.13 0-3.922.963-4.863 2.499l2.062 1.438c.535-.843 1.272-1.543 2.628-1.543 1.528 0 2.318.85 2.544 2.431a15 15 0 0 0-2.236-.173c-4.125 0-6.068 1.867-6.068 4.336s1.943 3.99 4.804 3.99c3.139 0 5.013-2.115 5.781-4.735.798.361 1.348 1.204 1.348 2.47 0 3.387-3.907 5.232-7.22 5.232-4.885 0-8.077-3.207-8.077-8.424 0-6.392 4.223-10.487 9.9-10.487 3.808 0 5.69 1.671 6.97 3.914l2.108-1.475C21.44 2.078 18.331 0 13.663 0 6.227 0 1.168 5.277 1.168 12.934c0 7 4.953 11.066 10.856 11.066 4.878 0 9.809-2.846 9.809-7.716 0-2.545-1.46-4.231-3.569-5.187m-6.33 4.855c-1.077 0-2.026-.512-2.026-1.453 0-1.483 1.822-1.934 3.606-1.934.678 0 1.34.045 1.927.173-.422 1.927-1.671 3.215-3.508 3.214Z"/>',
-      whatsapp:'<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>',
-      analytics:'<path d="M22.84 2.9982v17.9987c.0086 1.6473-1.3197 2.9897-2.967 2.9984a2.9808 2.9808 0 01-.3677-.0208c-1.528-.226-2.6477-1.5558-2.6105-3.1V3.1204c-.0369-1.5458 1.0856-2.8762 2.6157-3.1 1.6361-.1915 3.1178.9796 3.3093 2.6158.014.1201.0208.241.0202.3619zM4.1326 18.0548c-1.6417 0-2.9726 1.331-2.9726 2.9726C1.16 22.6691 2.4909 24 4.1326 24s2.9726-1.3309 2.9726-2.9726-1.331-2.9726-2.9726-2.9726zm7.8728-9.0098c-.0171 0-.0342 0-.0513.0003-1.6495.0904-2.9293 1.474-2.891 3.1256v7.9846c0 2.167.9535 3.4825 2.3505 3.763 1.6118.3266 3.1832-.7152 3.5098-2.327.04-.1974.06-.3983.0593-.5998v-8.9585c.003-1.6474-1.33-2.9852-2.9773-2.9882z"/>',
-      tagmanager:'<path d="M12.003 0a3 3 0 0 0-2.121 5.121l6.865 6.865-4.446 4.541 1.745 1.836a3.432 3.432 0 0 1 .7.739l.012.011-.001.002a3.432 3.432 0 0 1 .609 1.953 3.432 3.432 0 0 1-.09.78l7.75-7.647c.031-.029.067-.05.098-.08.023-.023.038-.052.06-.076a2.994 2.994 0 0 0-.06-4.166l-9-9A2.99 2.99 0 0 0 12.003 0zM8.63 2.133L.88 9.809a2.998 2.998 0 0 0 0 4.238l7.7 7.75a3.432 3.432 0 0 1-.077-.729 3.432 3.432 0 0 1 3.431-3.431 3.432 3.432 0 0 1 .826.101l-5.523-5.81 4.371-4.373-2.08-2.08c-.903-.904-1.193-2.183-.898-3.342zm3.304 16.004a2.932 2.932 0 0 0-2.931 2.931A2.932 2.932 0 0 0 11.934 24a2.932 2.932 0 0 0 2.932-2.932 2.932 2.932 0 0 0-2.932-2.931z"/>',
-      looker:'<path d="M11.9475 0c-1.1598.0021-2.0982.944-2.096 2.1038a2.1 2.1 0 00.356 1.166l.895-.8959a.884.884 0 11.565.564l-.895.895c.9593.6478 2.2621.3953 2.91-.564.6478-.9593.3953-2.262-.564-2.91A2.096 2.096 0 0011.9475 0zm-.835 6.1128a3.2629 3.2629 0 00-.653-1.965l-1.164 1.162a1.667 1.667 0 01-.318 2.012l.632 1.5449a3.2819 3.2819 0 001.503-2.754zm-3.2499 1.666h-.03c-.9217.0009-1.6697-.7455-1.6707-1.6673-.001-.9217.7454-1.6697 1.6672-1.6707a1.669 1.669 0 01.9195.275l1.152-1.152c-1.4069-1.141-3.4724-.9257-4.6135.4811s-.9257 3.4723.481 4.6135a3.2799 3.2799 0 002.7275.6652l-.633-1.5439v-.001zm4.1279 1.3359c-.728 0-1.452.106-2.15.315l.922 2.2519c2.6872-.6819 5.4184.9438 6.1002 3.631.6818 2.6873-.9439 5.4184-3.6311 6.1002s-5.4184-.9439-6.1002-3.631c-.5682-2.2394.4655-4.5774 2.5041-5.6643l-.91-2.2449c-3.6908 1.808-5.2173 6.2657-3.4093 9.9567l.0005.001c1.808 3.6909 6.2657 5.2173 9.9567 3.4093l.001-.0005c3.6913-1.8071 5.2187-6.2645 3.4116-9.9558a7.4417 7.4417 0 00-6.6865-4.1696h-.008l-.001.001z"/>',
-      searchconsole:'<path d="M8.548 1.156L6.832 2.872v1.682h1.716zm0 3.398v.035H6.832v-.035H3.386L0 7.844v3.577h2.826V8.94c0-.525.429-.954.954-.954h16.476c.525 0 .954.43.954.954v2.48h2.754V7.844l-3.386-3.29H17.3v.035h-1.717v-.035zm7.035 0H17.3V2.872l-1.717-1.716zM8.679 1.188V2.84h6.773V1.188zm11.471 7.07a.834.834 0 00-.132.01l-.543.002c-5.216.014-10.432-.008-15.648.01-.435-.063-.794.436-.716.883v2.264h17.812c-.016-.888.045-1.782-.034-2.666-.104-.342-.427-.502-.739-.502zm-15.422.634a.689.698 0 01.689.698.689.698 0 01-.689.697.689.698 0 01-.688-.697.689.698 0 01.688-.698zm2.134 0a.689.698 0 01.689.698.689.698 0 01-.689.697.689.698 0 01-.688-.697.689.698 0 01.688-.698zM.036 11.645v9.156c0 1.05.858 1.908 1.907 1.908h.883V11.645zm21.174 0v11.064h.882c1.05 0 1.908-.858 1.908-1.908v-9.156zM4.057 13.133v6.85h6.137v-6.85zm13.243.021v3.777l-1.708.977-1.708-.977v-3.758a4.006 4.006 0 000 7.23v2.441h3.457v-2.442a4.006 4.006 0 00-.041-7.248zm-13.243 8.26v1.43h7.925v-1.43z"/>',
-      semrush:'<path d="M20.698 11.911c0 .444-.226.516-.79.516-.596 0-.706-.1-.77-.554-.118-1.152-.896-2.13-2.201-2.24-.418-.034-.518-.19-.518-.706 0-.48.074-.708.446-.708 2.265.01 3.833 1.832 3.833 3.69v.002zm3.3 0c0-3.456-2.338-7.11-7.74-7.11H5.52c-.218 0-.354.11-.354.31 0 .109.082.209.156.26.388.31.97.654 1.73 1.036.743.372 1.323.616 1.903.852.246.1.336.208.336.344 0 .19-.136.308-.4.308H.372c-.254 0-.372.164-.372.326 0 .136.044.254.162.372.69.726 1.796 1.596 3.4 2.604 1.466.91 2.98 1.74 4.533 2.492.236.11.308.236.308.372-.008.154-.126.28-.4.28H4.1c-.216 0-.344.12-.344.3 0 .1.08.226.19.326.888.808 2.311 1.688 4.207 2.494 2.53 1.08 5.094 1.721 7.98 1.721 5.465 0 7.867-4.087 7.867-7.289l-.002.002zm-7.133 5.104c-2.794 0-5.132-2.276-5.132-5.114 0-2.794 2.33-5.04 5.132-5.04 2.863 0 5.111 2.24 5.111 5.04a5.086 5.086 0 0 1-5.111 5.114z"/>',
-      figma:'<path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/>',
-      davinci:'<path d="M17.621 0 5.977.004c-1.37 0-2.756.345-3.762 1.11a4.925 4.925 0 0 0-1.61 2.003C.233 3.93 0 5.02 0 5.951l.012 12.2c.002 1.604.479 3.057 1.461 4.112.984 1.056 2.462 1.683 4.331 1.691L16.856 24c1.26.005 3.095-.036 4.303-.714 1.075-.605 2.025-1.556 2.497-2.984.278-.84.345-2.084.344-3.147l-.021-11.13c-.002-.888-.15-2.023-.547-2.934-.425-.976-1.181-1.815-2.322-2.425C20.353.26 19.123 0 17.622 0zm0 .93c1.378 0 2.538.295 3.04.565.977.523 1.544 1.166 1.889 1.96.315.721.47 1.793.473 2.572l.018 11.13c.002 1.013-.097 2.257-.298 2.86-.396 1.202-1.146 1.946-2.063 2.462-.814.457-2.612.593-3.82.588l-11.05-.044c-1.657-.007-2.832-.534-3.626-1.386-.792-.851-1.212-2.06-1.212-3.485L.999 5.95c0-.829.196-1.827.474-2.437.345-.757.75-1.207 1.365-1.674C3.585 1.27 4.868.97 6.08.97zm-5.66 3.423c-1.976.089-3.204 1.658-3.214 3.29.019 1.443 1.635 3.481 2.884 4.53.12.099.154.109.33.18.062.025.198-.047.327-.135.36-.245.993-.947 1.648-1.738a7.67 7.67 0 0 0 1.031-1.683c.409-.89.261-1.599.235-1.888a3.983 3.983 0 0 0-.99-1.692 3.36 3.36 0 0 0-2.251-.864zm4.172 7.922a10.185 10.185 0 0 0-3.244.61c-.15.058-.26.1-.374.17-.057.036-.11.135-.105.292.017.433.29 1.278.624 2.27.384 1.135 1.066 2.27 1.844 2.74a3.23 3.23 0 0 0 2.53.342c.832-.243 1.595-.868 1.962-1.546.986-1.818.19-3.548-1.121-4.417-.447-.296-1.133-.445-1.89-.46-.074 0-.15-.002-.226-.001zm-8.432.038a6.201 6.201 0 0 0-.752.047c-.596.078-.932.273-1.29.51a3.177 3.177 0 0 0-1.365 1.979c-.075.552-.086 1.053.033 1.507.433 1.389 1.326 2.222 2.847 2.452.636.028 1.37-.063 1.99-.45 1.269-.782 2.08-3.17 2.412-4.742.053-.176.035-.357-.013-.42-.005-.067-.044-.113-.19-.183-.398-.192-1.32-.417-2.375-.6a7.68 7.68 0 0 0-1.297-.1z"/>',
-      blender:'<path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/>',
-      cinema4d:'<path d="M12.052 0C5.394-.007-.003 5.412 0 11.976.003 18.654 5.475 23.981 11.978 24c6.535.02 12.057-5.306 12.022-11.998-.009-1.665-.53-5.371-1.84-5.276-1.98.145-2.159 4.12-2.377 5.407-.417 2.46-1.346 5.08-2.953 6.99-1.88 2.359-4.697 3.634-7.662 3.158-3.55-.564-5.893-3.278-6.68-5.201-.753-1.723-1.035-4.162-.07-6.324 1.16-2.766 3.734-4.632 6.28-5.584 2.006-.827 4.103-1.151 5.357-1.375 2.516-.5 2.855-1.463 2.814-2.149-.015-.252-.256-.724-.785-.943C15.03.269 13.268.001 12.052 0zm5.098 1.342c.139.398.088.85-.148 1.256-.325.56-.972 1.05-1.897 1.29-1.636.428-2.976.554-4.34.96-1.312.39-3.397 1.018-5.316 2.552-.268.842-.341 1.892-.369 2.662.15 5.014 4.557 8.884 9.17 8.682.853-.037 1.921-.261 2.912-.68a13.56 13.56 0 0 0 1.387-2.683l.002-.002v-.002c.424-1.03.606-1.836.8-2.793.32-1.565.202-2.88 1.012-4.758.251-.582.71-1.113 1.258-1.346.25-.105.522-.133.79-.072-.89-2.471-3.115-4.326-5.26-5.066z"/>',
-      elevenlabs:'<path d="M4.6035 0v24h4.9317V0zm9.8613 0v24h4.9317V0z"/>',
-      react:'<path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/>',
-      nextjs:'<path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/>',
-      node:'<path d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/>',
-      wordpress:'<path d="M21.469 6.825c.84 1.537 1.318 3.3 1.318 5.175 0 3.979-2.156 7.456-5.363 9.325l3.295-9.527c.615-1.54.82-2.771.82-3.864 0-.405-.026-.78-.07-1.11m-7.981.105c.647-.03 1.232-.105 1.232-.105.582-.075.514-.93-.067-.899 0 0-1.755.135-2.88.135-1.064 0-2.85-.15-2.85-.15-.585-.03-.661.855-.075.885 0 0 .54.061 1.125.09l1.68 4.605-2.37 7.08L5.354 6.9c.649-.03 1.234-.1 1.234-.1.585-.075.516-.93-.065-.896 0 0-1.746.138-2.874.138-.2 0-.438-.008-.69-.015C4.911 3.15 8.235 1.215 12 1.215c2.809 0 5.365 1.072 7.286 2.833-.046-.003-.091-.009-.141-.009-1.06 0-1.812.923-1.812 1.914 0 .89.513 1.643 1.06 2.531.411.72.89 1.643.89 2.977 0 .915-.354 1.994-.821 3.479l-1.075 3.585-3.9-11.61.001.014zM12 22.784c-1.059 0-2.081-.153-3.048-.437l3.237-9.406 3.315 9.087c.024.053.05.101.078.149-1.12.393-2.325.609-3.582.609M1.211 12c0-1.564.336-3.05.935-4.39L7.29 21.709C3.694 19.96 1.212 16.271 1.211 12M12 0C5.385 0 0 5.385 0 12s5.385 12 12 12 12-5.385 12-12S18.615 0 12 0"/>',
-      shopify:'<path d="M15.337 23.979l7.216-1.561s-2.604-17.613-2.625-17.73c-.018-.116-.114-.192-.211-.192s-1.929-.136-1.929-.136-1.275-1.274-1.439-1.411c-.045-.037-.075-.057-.121-.074l-.914 21.104h.023zM11.71 11.305s-.81-.424-1.774-.424c-1.447 0-1.504.906-1.504 1.141 0 1.232 3.24 1.715 3.24 4.629 0 2.295-1.44 3.76-3.406 3.76-2.354 0-3.54-1.465-3.54-1.465l.646-2.086s1.245 1.066 2.28 1.066c.675 0 .975-.545.975-.932 0-1.619-2.654-1.694-2.654-4.359-.034-2.237 1.571-4.416 4.827-4.416 1.257 0 1.875.361 1.875.361l-.945 2.715-.02.01zM11.17.83c.136 0 .271.038.405.135-.984.465-2.064 1.639-2.508 3.992-.656.213-1.293.405-1.889.578C7.697 3.75 8.951.84 11.17.84V.83zm1.235 2.949v.135c-.754.232-1.583.484-2.394.736.466-1.777 1.333-2.645 2.085-2.971.193.501.309 1.176.309 2.1zm.539-2.234c.694.074 1.141.867 1.429 1.755-.349.114-.735.231-1.158.366v-.252c0-.752-.096-1.371-.271-1.871v.002zm2.992 1.289c-.02 0-.06.021-.078.021s-.289.075-.714.21c-.423-1.233-1.176-2.37-2.508-2.37h-.115C12.135.209 11.669 0 11.265 0 8.159 0 6.675 3.877 6.21 5.846c-1.194.365-2.063.636-2.16.674-.675.213-.694.232-.772.87-.075.462-1.83 14.063-1.83 14.063L15.009 24l.927-21.166z"/>',
-      webflow:'<path d="m24 4.515-7.658 14.97H9.149l3.205-6.204h-.144C9.566 16.713 5.621 18.973 0 19.485v-6.118s3.596-.213 5.71-2.435H0V4.515h6.417v5.278l.144-.001 2.622-5.277h4.854v5.244h.144l2.72-5.244H24Z"/>',
-      github:'<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>',
-      vercel:'<path d="m12 1.608 12 20.784H0Z"/>',
-      claude:'<path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/>',
-      gemini:'<path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>',
-      n8n:'<path d="M21.4737 5.6842c-1.1772 0-2.1663.8051-2.4468 1.8947h-2.8955c-1.235 0-2.289.893-2.492 2.111l-.1038.623a1.263 1.263 0 0 1-1.246 1.0555H11.289c-.2805-1.0896-1.2696-1.8947-2.4468-1.8947s-2.1663.8051-2.4467 1.8947H4.973c-.2805-1.0896-1.2696-1.8947-2.4468-1.8947C1.1311 9.4737 0 10.6047 0 12s1.131 2.5263 2.5263 2.5263c1.1772 0 2.1663-.8051 2.4468-1.8947h1.4223c.2804 1.0896 1.2696 1.8947 2.4467 1.8947 1.1772 0 2.1663-.8051 2.4468-1.8947h1.0008a1.263 1.263 0 0 1 1.2459 1.0555l.1038.623c.203 1.218 1.257 2.111 2.492 2.111h.3692c.2804 1.0895 1.2696 1.8947 2.4468 1.8947 1.3952 0 2.5263-1.131 2.5263-2.5263s-1.131-2.5263-2.5263-2.5263c-1.1772 0-2.1664.805-2.4468 1.8947h-.3692a1.263 1.263 0 0 1-1.246-1.0555l-.1037-.623A2.52 2.52 0 0 0 13.9607 12a2.52 2.52 0 0 0 .821-1.4794l.1038-.623a1.263 1.263 0 0 1 1.2459-1.0555h2.8955c.2805 1.0896 1.2696 1.8947 2.4468 1.8947 1.3952 0 2.5263-1.131 2.5263-2.5263s-1.131-2.5263-2.5263-2.5263m0 1.2632a1.263 1.263 0 0 1 1.2631 1.2631 1.263 1.263 0 0 1-1.2631 1.2632 1.263 1.263 0 0 1-1.2632-1.2632 1.263 1.263 0 0 1 1.2632-1.2631M2.5263 10.7368A1.263 1.263 0 0 1 3.7895 12a1.263 1.263 0 0 1-1.2632 1.2632A1.263 1.263 0 0 1 1.2632 12a1.263 1.263 0 0 1 1.2631-1.2632m6.3158 0A1.263 1.263 0 0 1 10.1053 12a1.263 1.263 0 0 1-1.2632 1.2632A1.263 1.263 0 0 1 7.579 12a1.263 1.263 0 0 1 1.2632-1.2632m10.1053 3.7895a1.263 1.263 0 0 1 1.2631 1.2632 1.263 1.263 0 0 1-1.2631 1.2631 1.263 1.263 0 0 1-1.2632-1.2631 1.263 1.263 0 0 1 1.2632-1.2632"/>',
-      zapier:'<path d="M4.157 0A4.151 4.151 0 0 0 0 4.161v15.678A4.151 4.151 0 0 0 4.157 24h15.682A4.152 4.152 0 0 0 24 19.839V4.161A4.152 4.152 0 0 0 19.839 0H4.157Zm10.61 8.761h.03a.577.577 0 0 1 .23.038.585.585 0 0 1 .201.124.63.63 0 0 1 .162.431.612.612 0 0 1-.162.435.58.58 0 0 1-.201.128.58.58 0 0 1-.23.042.529.529 0 0 1-.235-.042.585.585 0 0 1-.332-.328.559.559 0 0 1-.038-.235.613.613 0 0 1 .17-.431.59.59 0 0 1 .405-.162Zm2.853 1.572c.03.004.061.004.095.004.325-.011.646.064.937.219.238.144.431.355.552.609.128.279.189.582.185.888v.193a2 2 0 0 1 0 .219h-2.498c.003.227.075.45.204.642a.78.78 0 0 0 .646.265.714.714 0 0 0 .484-.136.642.642 0 0 0 .23-.318l.915.257a1.398 1.398 0 0 1-.28.537c-.14.159-.321.284-.521.355a2.234 2.234 0 0 1-.836.136 1.923 1.923 0 0 1-1.001-.245 1.618 1.618 0 0 1-.665-.703 2.221 2.221 0 0 1-.227-1.036 1.95 1.95 0 0 1 .48-1.398 1.9 1.9 0 0 1 1.3-.488Zm-9.607.023c.162.004.325.026.48.079.207.065.4.174.563.314.26.302.393.692.366 1.088v2.276H8.53l-.109-.711h-.065c-.064.163-.155.31-.272.439a1.122 1.122 0 0 1-.374.264 1.023 1.023 0 0 1-.453.083 1.334 1.334 0 0 1-.866-.264.965.965 0 0 1-.329-.801.993.993 0 0 1 .076-.431 1.02 1.02 0 0 1 .242-.363 1.478 1.478 0 0 1 1.043-.303h.952v-.181a.696.696 0 0 0-.136-.454.553.553 0 0 0-.438-.154.695.695 0 0 0-.378.086.48.48 0 0 0-.193.254l-.99-.144a1.26 1.26 0 0 1 .257-.563c.14-.174.321-.302.533-.378.261-.091.54-.136.82-.129.053-.003.106-.007.163-.007Zm4.384.007c.174 0 .347.038.506.114.182.083.34.211.458.374.257.423.377.911.351 1.406a2.53 2.53 0 0 1-.355 1.448 1.148 1.148 0 0 1-1.009.517c-.204 0-.401-.045-.582-.136a1.052 1.052 0 0 1-.48-.457 1.298 1.298 0 0 1-.114-.234h-.045l.004 1.784h-1.059v-4.713h.904l.117.805h.057c.068-.208.177-.401.328-.56a1.129 1.129 0 0 1 .843-.344h.076v-.004Zm7.559.084h.903l.113.805h.053a1.37 1.37 0 0 1 .235-.484.813.813 0 0 1 .313-.242.82.82 0 0 1 .39-.076h.234v1.051h-.401a.662.662 0 0 0-.313.008.623.623 0 0 0-.272.155.663.663 0 0 0-.174.26.683.683 0 0 0-.027.314v1.875h-1.054v-3.666Zm-17.515.003h3.262v.896L3.73 13.104l.034.113h1.973l.042.9H2.4v-.9l1.931-1.754-.045-.117H2.441v-.896Zm11.815 0h1.055v3.659h-1.055V10.45Zm3.443.684.019.016a.69.69 0 0 0-.351.045.756.756 0 0 0-.287.204c-.11.155-.174.336-.189.522h1.545c-.034-.526-.257-.787-.74-.787h.003Zm-5.718.163c-.026 0-.057 0-.083.004a.78.78 0 0 0-.31.053.746.746 0 0 0-.257.189 1.016 1.016 0 0 0-.204.695v.064c-.015.257.057.507.204.711a.634.634 0 0 0 .253.196.638.638 0 0 0 .314.061.644.644 0 0 0 .578-.265c.14-.223.204-.48.189-.74a1.216 1.216 0 0 0-.181-.711.677.677 0 0 0-.503-.257Zm-4.509 1.266a.464.464 0 0 0-.268.102.373.373 0 0 0-.114.276c0 .053.008.106.027.155a.375.375 0 0 0 .087.132.576.576 0 0 0 .397.11v.004a.863.863 0 0 0 .563-.182.573.573 0 0 0 .211-.457v-.14h-.903Z"/>',
-      make:'<path d="M13.38 3.498c-.27 0-.511.19-.566.465L9.85 18.986a.578.578 0 0 0 .453.678l4.095.826a.58.58 0 0 0 .682-.455l2.963-15.021a.578.578 0 0 0-.453-.678l-4.096-.826a.589.589 0 0 0-.113-.012zm-5.876.098a.576.576 0 0 0-.516.318L.062 17.697a.575.575 0 0 0 .256.774l3.733 1.877a.578.578 0 0 0 .775-.258l6.926-13.781a.577.577 0 0 0-.256-.776L7.762 3.658a.571.571 0 0 0-.258-.062zm11.74.115a.576.576 0 0 0-.576.576v15.426c0 .318.258.578.576.578h4.178a.58.58 0 0 0 .578-.578V4.287a.578.578 0 0 0-.578-.576Z"/>',
-      airtable:'<path d="M11.992 1.966c-.434 0-.87.086-1.28.257L1.779 5.917c-.503.208-.49.908.012 1.116l8.982 3.558a3.266 3.266 0 0 0 2.454 0l8.982-3.558c.503-.196.503-.908.012-1.116l-8.957-3.694a3.255 3.255 0 0 0-1.272-.257zM23.4 8.056a.589.589 0 0 0-.222.045l-10.012 3.877a.612.612 0 0 0-.38.564v8.896a.6.6 0 0 0 .821.552L23.62 18.1a.583.583 0 0 0 .38-.551V8.653a.6.6 0 0 0-.6-.596zM.676 8.095a.644.644 0 0 0-.48.19C.086 8.396 0 8.53 0 8.69v8.355c0 .442.515.737.908.54l6.27-3.006.307-.147 2.969-1.436c.466-.22.43-.908-.061-1.092L.883 8.138a.57.57 0 0 0-.207-.044z"/>',
-
-      // These brands are not in the open icon set (trademark holders requested removal),
-      // so these are original glyphs. Swap in official brand SVGs before launch if preferred.
-      linkedin:'<path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05a3.75 3.75 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13M7.12 20.45H3.55V9h3.57zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0"/>',
-      stackadapt:'<path d="M12 2 22 7l-10 5L2 7z" opacity=".95"/><path d="M2 11.6 12 16.6l10-5v2.2l-10 5-10-5z"/><path d="M2 16.2l10 5 10-5v2.2l-10 5-10-5z"/>',
-      ahrefs:'<path d="M3.6 20.4V3.6h3.3v6.6h4.4V3.6h3.3v16.8h-3.3v-7h-4.4v7z"/><path d="M16.8 20.4v-8.2h2.7v1.5a2.9 2.9 0 0 1 2.7-1.7v3a3 3 0 0 0-.6-.05c-1.4 0-2.1.8-2.1 2.4v3z"/>',
-      photoshop:'<path d="M3.6 2.4h16.8A1.2 1.2 0 0 1 21.6 3.6v16.8a1.2 1.2 0 0 1-1.2 1.2H3.6a1.2 1.2 0 0 1-1.2-1.2V3.6a1.2 1.2 0 0 1 1.2-1.2m3.9 5.1v9h2.1v-3h1.6a3 3 0 0 0 0-6zm2.1 1.9h1.4a1.1 1.1 0 0 1 0 2.2H9.6zm5.6 7.1h2.1v-9h-2.1z"/>',
-      illustrator:'<path d="M3.6 2.4h16.8A1.2 1.2 0 0 1 21.6 3.6v16.8a1.2 1.2 0 0 1-1.2 1.2H3.6a1.2 1.2 0 0 1-1.2-1.2V3.6a1.2 1.2 0 0 1 1.2-1.2m4.1 14.1h2.2l.7-2.3h3.2l.7 2.3h2.2l-3.3-9.7h-2.4zm3.4-4.1 1.1-3.6 1.1 3.6z"/>',
-      aftereffects:'<path d="M3.6 2.4h16.8A1.2 1.2 0 0 1 21.6 3.6v16.8a1.2 1.2 0 0 1-1.2 1.2H3.6a1.2 1.2 0 0 1-1.2-1.2V3.6a1.2 1.2 0 0 1 1.2-1.2M5.4 16.5h2.2l.7-2.3h3.2l.7 2.3h2.2L11.1 6.8H8.7zm3.4-4.1 1.1-3.6 1.1 3.6zM16 16.5h2v-6h1.6a2.7 2.7 0 0 0 0-5.4H16z"/>',
-      premiere:'<path d="M3.6 2.4h16.8A1.2 1.2 0 0 1 21.6 3.6v16.8a1.2 1.2 0 0 1-1.2 1.2H3.6a1.2 1.2 0 0 1-1.2-1.2V3.6a1.2 1.2 0 0 1 1.2-1.2m4 5.1v9h2.1v-3h1.6a3 3 0 0 0 0-6zm2.1 1.9H11a1.1 1.1 0 0 1 0 2.2H9.7zm5.4 7.1h2v-4.4c0-1.1.6-1.7 1.7-1.7h.4V9.3a2.2 2.2 0 0 0-2.1 1.3V9.5h-2z"/>',
-      capcut:'<path d="M12 2.2a9.8 9.8 0 1 0 0 19.6 9.8 9.8 0 0 0 0-19.6m0 3.4a6.4 6.4 0 0 1 5 2.4l-3 2.2a2.8 2.8 0 0 0-2-.9 2.7 2.7 0 1 0 0 5.4c.8 0 1.5-.3 2-.9l3 2.2a6.4 6.4 0 1 1-5-10.4"/>',
-      canva:'<path d="M12 2.2a9.8 9.8 0 1 0 0 19.6 9.8 9.8 0 0 0 0-19.6m1.5 5.1c1.6 0 2.8.9 3.1 2.2.2.9-.2 1.6-.9 1.7-.6.1-1.1-.2-1.3-.9-.2-.8-.6-1.2-1.2-1.2-1.3 0-2.4 1.7-2.7 3.5-.3 1.9.3 3.1 1.6 3.1 1.1 0 2-.7 2.7-1.9.3-.5.7-.6 1-.4.3.2.4.7.1 1.2-1 1.9-2.6 3-4.4 3-2.5 0-4-2-3.5-5 .5-3.1 3-5.3 5.5-5.3"/>',
-      midjourney:'<path d="M21.6 18.4c-1-.2-2-.6-2.9-1.2-3.1-2-5-5.3-7.6-7.8C8.9 7.3 6.2 5.8 3.2 5.4c-.6-.1-1-.2-1-.6 0-.5.5-.6 1.2-.6 3.6 0 7 1.6 9.8 4 2.5 2.2 4.2 5 6.6 6.7.7.5 1.4.9 2.1 1.1.5.2.7.4.7.7 0 .4-.4.8-1 .7"/><path d="M14.9 20.1c-.7-.4-1.3-1-1.9-1.7-1.8-2.2-2.8-5-4.7-7-1.2-1.2-2.6-2-4.2-2.3-.5-.1-.8-.3-.8-.6 0-.4.4-.6 1-.5 2.4.3 4.5 1.5 6.1 3.4 1.7 2 2.6 4.5 4.2 6.4.4.5.8.9 1.2 1.2.4.3.5.6.3.9-.2.3-.7.4-1.2.2"/>',
-      runway:'<path d="M2.4 3.6h19.2v16.8H2.4zm2.2 2.2v12.4h14.8V5.8zm3.6 2.4 7 3.8-7 3.8z"/>',
-      chatgpt:'<path d="M22.28 9.82a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9A6.07 6.07 0 0 0 4.98 4.18a5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .74 7.1 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.52 2.9A5.98 5.98 0 0 0 13.26 24a6.05 6.05 0 0 0 5.77-4.21 5.98 5.98 0 0 0 4-2.9 6.05 6.05 0 0 0-.75-7.07m-9.02 12.6a4.48 4.48 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.79.79 0 0 0 .39-.68v-6.74l2.02 1.17a.07.07 0 0 1 .04.05v5.58a4.5 4.5 0 0 1-4.5 4.5M3.6 18.3a4.47 4.47 0 0 1-.54-3l.14.09 4.79 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.73 19.96a4.5 4.5 0 0 1-6.14-1.65M2.34 7.9a4.48 4.48 0 0 1 2.34-1.97V11.6a.77.77 0 0 0 .39.68l5.81 3.35-2.02 1.17a.07.07 0 0 1-.07 0L3.95 14a4.5 4.5 0 0 1-1.61-6.1m16.6 3.86L13.1 8.38l2.02-1.16a.07.07 0 0 1 .07 0l4.84 2.8a4.49 4.49 0 0 1-.68 8.1v-5.68a.79.79 0 0 0-.4-.68m2.01-3.02-.14-.09-4.78-2.79a.78.78 0 0 0-.79 0L9.4 9.23V6.9a.07.07 0 0 1 .03-.06l4.84-2.79a4.5 4.5 0 0 1 6.68 4.66M8.3 12.86l-2.02-1.16a.08.08 0 0 1-.04-.06V6.07a4.5 4.5 0 0 1 7.38-3.45l-.14.08L8.7 5.46a.79.79 0 0 0-.4.68zm1.1-2.37 2.6-1.5 2.6 1.5v3l-2.6 1.5-2.6-1.5z"/>',
-      api:'<path d="M8.7 5.2 3 12l5.7 6.8 1.5-1.3L5.6 12l4.6-5.5zm6.6 0-1.5 1.3 4.6 5.5-4.6 5.5 1.5 1.3L21 12z"/><path d="M13.3 3.9 9.4 20.5l1.9.4 3.9-16.6z"/>'
-
-    };
-
-    // name, glyph, category, brand colour, what we use it for
-    var TOOLS = [
-      // Platforms, ads & analytics
-      ['Meta Ads','meta','growth','#0866FF','Facebook and Instagram campaign buying'],
-      ['Instagram','instagram','growth','#E1306C','Organic content and creator partnerships'],
-      ['Google Ads','googleAds','growth','#EA4335','Search, Performance Max and Display'],
-      ['YouTube Ads','youtube','growth','#FF0000','Video campaigns and in-stream placements'],
-      ['TikTok Ads','tiktok','growth','#111111','Short-form and creator-led campaigns'],
-      ['LinkedIn Ads','linkedin','growth','#0A66C2','B2B and account-based targeting'],
-      ['Reddit Ads','reddit','growth','#FF4500','Community and interest-based targeting'],
-      ['X Ads','x','growth','#111111','Conversation and real-time campaigns'],
-      ['Snapchat Ads','snapchat','growth','#FFC800','Younger-audience reach and AR formats'],
-      ['Pinterest Ads','pinterest','growth','#E60023','Discovery and intent-led retail'],
-      ['Spotify Ads','spotify','growth','#1DB954','Audio and podcast placements'],
-      ['Threads','threads','growth','#111111','Emerging social and community presence'],
-      ['WhatsApp Business','whatsapp','growth','#25D366','Direct conversation and lead follow-up'],
-      ['StackAdapt','stackadapt','growth','#6C4BF6','Programmatic and native display buying'],
-      ['Google Analytics 4','analytics','growth','#E8710A','Behaviour and conversion reporting'],
-      ['Google Tag Manager','tagmanager','growth','#4285F4','Tracking and event deployment'],
-      ['Looker Studio','looker','growth','#4285F4','Live client reporting dashboards'],
-      ['Search Console','searchconsole','growth','#458CF5','Indexing and search performance'],
-      ['Semrush','semrush','growth','#FF642D','Keyword and competitor research'],
-      ['Ahrefs','ahrefs','growth','#0F65EF','Backlink and SERP analysis'],
-
-      // Creative
-      ['Figma','figma','creative','#F24E1E','Interface design and design systems'],
-      ['Adobe Photoshop','photoshop','creative','#31A8FF','Retouching and composites'],
-      ['Adobe Illustrator','illustrator','creative','#FF9A00','Logos, icons and vector work'],
-      ['After Effects','aftereffects','creative','#9999FF','Motion graphics and VFX'],
-      ['Premiere Pro','premiere','creative','#9999FF','Long-form video editing'],
-      ['CapCut','capcut','creative','#111111','Fast short-form social edits'],
-      ['DaVinci Resolve','davinci','creative','#FF7A00','Colour grading and finishing'],
-      ['Blender','blender','creative','#E87D0D','3D modelling, CGI and animation'],
-      ['Cinema 4D','cinema4d','creative','#011A6A','Product CGI and motion design'],
-      ['Canva','canva','creative','#00C4CC','Fast templated social assets'],
-      ['Midjourney','midjourney','creative','#4B4BFF','Concept and moodboard imagery'],
-      ['Runway','runway','creative','#00C176','AI video generation and editing'],
-      ['ElevenLabs','elevenlabs','creative','#111111','Voiceover and audio synthesis'],
-
-      // Development
-      ['React','react','dev','#61DAFB','Component-driven front ends'],
-      ['Next.js','nextjs','dev','#111111','Server-rendered production sites'],
-      ['Node.js','node','dev','#5FA04E','APIs and backend services'],
-      ['WordPress','wordpress','dev','#21759B','Content-managed marketing sites'],
-      ['Shopify','shopify','dev','#95BF47','E-commerce storefronts'],
-      ['Webflow','webflow','dev','#146EF5','Visual builds with clean output'],
-      ['GitHub','github','dev','#181717','Version control and code review'],
-      ['Vercel','vercel','dev','#111111','Deployment and edge hosting'],
-
-      // AI & automation
-      ['Claude','claude','ai','#D97757','Research, analysis and long-form drafting'],
-      ['ChatGPT','chatgpt','ai','#10A37F','Ideation and rapid iteration'],
-      ['Google Gemini','gemini','ai','#4285F4','Multimodal analysis'],
-      ['n8n','n8n','ai','#EA4B71','Self-hosted workflow automation'],
-      ['Zapier','zapier','ai','#FF4F00','App-to-app task automation'],
-      ['Make','make','ai','#6D00CC','Visual multi-step scenarios'],
-      ['Model APIs','api','ai','#10A37F','Custom AI features inside client products'],
-      ['Airtable','airtable','ai','#FCB400','Operational databases and trackers']
-    ];
-
-    var CAT_LABEL = {
-      growth:'Platforms, ads & analytics',
-      creative:'Creative production',
-      dev:'Web & app development',
-      ai:'AI & automation'
-    };
-
-    // Brand colours need adjusting per theme: too-light fails on ivory, too-dark fails on navy
-    function toneFor(hex, mode){
-      var h = hex.replace('#','');
-      if(h.length === 3) h = h.split('').map(function(c){ return c+c; }).join('');
-      var r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
-      function lin(v){ v/=255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); }
-      function lum(){ return 0.2126*lin(r) + 0.7152*lin(g) + 0.0722*lin(b); }
-      var guard = 0;
-      if(mode === 'light'){
-        while(lum() > 0.30 && guard++ < 24){
-          r = Math.round(r*0.84); g = Math.round(g*0.84); b = Math.round(b*0.84);
-        }
-      } else {
-        while(lum() < 0.42 && guard++ < 24){
-          r = Math.min(255, Math.round(r*1.18) + 12);
-          g = Math.min(255, Math.round(g*1.18) + 12);
-          b = Math.min(255, Math.round(b*1.18) + 12);
-        }
-      }
-      return 'rgb(' + r + ',' + g + ',' + b + ')';
-    }
-
-    var field = document.getElementById('tool-field');
-    if(field){
-      field.innerHTML = TOOLS.map(function(t, i){
-        var glyph = G[t[1]] || '<circle cx="12" cy="12" r="7"/>';
-        return '<button class="tool" type="button" aria-expanded="false"'
-             + ' data-cat="' + t[2] + '" data-name="' + t[0] + '" data-use="' + t[4] + '" data-color="' + t[3] + '"'
-             + ' style="--tc-l:' + toneFor(t[3],'light') + ';--tc-d:' + toneFor(t[3],'dark')
-             + ';--dur:' + (6 + (i % 5) * 0.9).toFixed(1) + 's;--del:' + ((i % 11) * 0.35).toFixed(2) + 's"'
-             + ' aria-label="' + t[0] + '">'
-             + '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + glyph + '</svg>'
-             + '<span class="tname">' + t[0] + '</span></button>';
-      }).join('');
-
-      var tools = Array.prototype.slice.call(field.querySelectorAll('.tool'));
-      var readout = document.getElementById('tool-readout');
-
-      tools.forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var open = btn.getAttribute('aria-expanded') === 'true';
-          tools.forEach(function(b){ b.setAttribute('aria-expanded','false'); });
-          if(open){
-            if(readout) readout.innerHTML = '';
-            return;
-          }
-          btn.setAttribute('aria-expanded','true');
-          if(readout){
-            readout.innerHTML =
-              '<div class="ro-name"><span class="ro-dot" style="background:' + btn.dataset.color + '"></span>'
-              + btn.dataset.name + '</div>'
-              + '<div class="ro-cat">' + CAT_LABEL[btn.dataset.cat] + '</div>'
-              + '<p class="ro-use">' + btn.dataset.use + '</p>';
-          }
-        });
-      });
-
-      if(!reducedMotion && window.matchMedia('(min-width: 901px)').matches){
-        field.addEventListener('mousemove', function(e){
-          tools.forEach(function(t){
-            var b = t.getBoundingClientRect();
-            var dx = (b.left + b.width/2) - e.clientX;
-            var dy = (b.top + b.height/2) - e.clientY;
-            var d = Math.sqrt(dx*dx + dy*dy) || 1;
-            if(d < 130){
-              var push = (130 - d) / 130 * 26;
-              t.style.animationPlayState = 'paused';
-              t.style.transform = 'translate(' + (dx/d*push).toFixed(1) + 'px,' + (dy/d*push).toFixed(1) + 'px) scale(1.1)';
-            } else {
-              t.style.transform = '';
-              t.style.animationPlayState = '';
-            }
-          });
-        });
-        field.addEventListener('mouseleave', function(){
-          tools.forEach(function(t){ t.style.transform=''; t.style.animationPlayState=''; });
-        });
-      }
-
-      var filterBar = document.getElementById('tool-filters');
-      if(filterBar){
-        filterBar.addEventListener('click', function(e){
-          var b = e.target.closest('button');
-          if(!b) return;
-          var cat = b.dataset.filter;
-          filterBar.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
-          tools.forEach(function(t){
-            t.classList.toggle('dim', cat !== 'all' && t.dataset.cat !== cat);
-          });
-        });
-      }
-    }
-
-    // Soft feathered cursor trail — throttled, capped, purely decorative
-    if(!reducedMotion && window.matchMedia('(min-width: 901px)').matches && window.matchMedia('(pointer: fine)').matches){
-      var trailHost = document.createElement('div');
-      trailHost.id = 'cursor-trail';
-      trailHost.setAttribute('aria-hidden','true');
-      document.body.appendChild(trailHost);
-
-      var lastDrop = 0, lastX = 0, lastY = 0, live = 0;
-      document.addEventListener('mousemove', function(e){
-        var now = performance.now();
-        var dx = e.clientX - lastX, dy = e.clientY - lastY;
-        var moved = Math.sqrt(dx*dx + dy*dy);
-        // only drop a puff every 45ms and after enough travel, so it feathers rather than smears
-        if(now - lastDrop < 45 || moved < 14 || live > 18) return;
-        lastDrop = now; lastX = e.clientX; lastY = e.clientY;
-
-        var size = 34 + Math.min(moved, 60);
-        var s = document.createElement('span');
-        s.className = 'tr';
-        s.style.cssText = 'left:' + e.clientX + 'px;top:' + e.clientY + 'px;width:' + size + 'px;height:' + size + 'px';
-        trailHost.appendChild(s);
-        live++;
-        setTimeout(function(){ s.remove(); live--; }, 1100);
-      }, { passive: true });
-    }
-
-    // ---- Conversational assistant ----
-    // Four opening options only. Picking one collapses the chips and opens a
-    // normal chat view, the way a live-chat widget behaves.
-    var OPENERS = ['services','pricing','start','human'];
-
-    var TOPICS = {
-      services: {
-        q:'What do you do?',
-        a:'Four things, run by one team:\n\n• Digital growth — performance marketing, paid social and search, SEO\n• Digital build — websites, apps and software\n• Creative — video, design and CGI\n• AI and automation\n\nMost clients use more than one.',
-        next:['growth','build','creative','ai','pricing']
-      },
-      pricing: {
-        q:'How much does it cost?',
-        a:'We quote per project rather than publishing rate cards, because scope varies a lot.\n\nMost engagements begin with a short paid discovery, then a fixed scope. Growth and maintenance usually run as a monthly retainer.\n\nTell us the problem and we will come back with a number.',
-        next:['start','retainers','human']
-      },
-      start: {
-        q:'How do we get started?',
-        a:'Send us a brief and we will reply within one business day, then set up a call to understand the problem before proposing anything.\n\nYou can use the contact form, or email hello@cognimorph.co directly.',
-        next:['human','timeline','services'],
-        cta:{label:'Open the contact form', href:'contact.html'}
-      },
-      human: {
-        q:'I want to talk to a person',
-        a:'Of course. Two ways to reach a real member of the team:\n\nWhatsApp is usually fastest during Nepal business hours. Email gets a reply within one business day.',
-        next:['start','pricing'],
-        human:true
-      },
-      growth: {
-        q:'Tell me about digital growth',
-        a:'We plan, buy and optimise paid media across Meta, Google, YouTube, TikTok, LinkedIn, Reddit, X, Snapchat, Pinterest and Spotify, plus programmatic through StackAdapt.\n\nSEO and AEO and social management sit in the same team, so search, social and paid reinforce each other instead of competing.',
-        next:['pricing','platforms','start']
-      },
-      build: {
-        q:'Tell me about digital build',
-        a:'Websites, web apps, mobile apps and internal software — designed around how people actually behave, then built to stay fast and easy for your team to run.\n\nWe stay on for maintenance rather than handing over and disappearing.',
-        next:['pricing','start','services']
-      },
-      creative: {
-        q:'Tell me about creative',
-        a:'Video editing, graphic design, CGI and AI video, produced in-house.\n\nWe plan for multi-format capture up front, so one production day covers hero film, short-form cutdowns and stills rather than needing three shoots.',
-        next:['pricing','start','services']
-      },
-      ai: {
-        q:'Tell me about AI and automation',
-        a:'Two things. We automate the repetitive work inside your business — document handling, reporting, data entry — and we train your team to run and extend it themselves.\n\nWe also use AI in our own production and research, which is why our output holds up.',
-        next:['pricing','start','services']
-      },
-      platforms: {
-        q:'Which ad platforms do you run?',
-        a:'Meta, Google, YouTube, TikTok, LinkedIn, Reddit, X, Snapchat, Pinterest and Spotify, plus programmatic buying through StackAdapt.\n\nWe also handle the tracking behind them — GA4, Tag Manager, Meta CAPI and server-side events.',
-        next:['growth','pricing','start']
-      },
-      industries: {
-        q:'Which industries do you know?',
-        a:'SaaS and B2B, e-commerce and retail, yoga and wellness, beauty and personal care, FMCG, and real estate.\n\nIf your sector is not on that list, ask — the fundamentals usually transfer.',
-        next:['services','start']
-      },
-      retainers: {
-        q:'Do you work on retainer?',
-        a:'Yes. Growth and maintenance work almost always runs monthly.\n\nBuild and creative projects are usually fixed scope, and often continue as a retainer once live.',
-        next:['pricing','start']
-      },
-      timeline: {
-        q:'How long do projects take?',
-        a:'A marketing site is typically four to six weeks. An app build runs three to five months. Growth campaigns go live within two to three weeks of kickoff, then improve continuously.\n\nWe will give you a real timeline once we know the scope.',
-        next:['pricing','start']
-      },
-      where: {
-        q:'Where are you based?',
-        a:'We are registered in Nepal and work out of Kathmandu, serving clients across South Asia, the Gulf, the UK and Singapore.',
-        next:['services','start']
-      }
-    };
-
-    // Simple keyword routing for free-typed messages
-    var ROUTES = [
-      [/\b(price|pricing|cost|budget|quote|rate|charge|fee)\b/i, 'pricing'],
-      [/\b(human|person|someone|talk|call|speak|agent|team member)\b/i, 'human'],
-      [/\b(whatsapp|phone|number|contact|email|reach)\b/i, 'human'],
-      [/\b(start|begin|kick ?off|onboard|hire|work with|brief)\b/i, 'start'],
-      [/\b(seo|aeo|ads?|advertis|meta|google|tiktok|linkedin|paid|ppc|campaign|marketing|media buy)\b/i, 'growth'],
-      [/\b(platform|channel)\b/i, 'platforms'],
-      [/\b(web ?site|app|develop|build|software|shopify|wordpress|code)\b/i, 'build'],
-      [/\b(video|creative|design|cgi|edit|graphic|brand|logo)\b/i, 'creative'],
-      [/\b(ai|automat|workflow|n8n|chatbot|train)\b/i, 'ai'],
-      [/\b(industr|sector|niche|saas|ecommerce|e-commerce|retail|beauty|fmcg|real estate|wellness|yoga)\b/i, 'industries'],
-      [/\b(retainer|monthly|ongoing|contract)\b/i, 'retainers'],
-      [/\b(how long|timeline|duration|when|deadline|fast|quick)\b/i, 'timeline'],
-      [/\b(where|located|location|based|nepal|kathmandu|office)\b/i, 'where'],
-      [/\b(what do you do|services?|offer|capabilit)\b/i, 'services']
-    ];
-
-    var asstBtn   = document.getElementById('asst-btn');
-    var asstMin   = document.getElementById('asst-min');
-    var asstLog   = document.getElementById('asst-log');
-    var asstChips = document.getElementById('asst-chips');
-    var asstForm  = document.getElementById('asst-composer');
-    var asstInput = document.getElementById('asst-input');
-
-    if(asstBtn && asstLog && asstChips){
-      var started = false;
-
-      function setAsst(open){
-        document.body.classList.toggle('asst-open', open);
-        asstBtn.setAttribute('aria-expanded', String(open));
-        if(open){
-          if(!started) greet();
-          setTimeout(function(){
-            if(started && asstInput) asstInput.focus();
-            else { var f = asstChips.querySelector('button'); if(f) f.focus(); }
-          }, 320);
-        } else {
-          asstBtn.focus();
-        }
-      }
-      asstBtn.addEventListener('click', function(){
-        setAsst(!document.body.classList.contains('asst-open'));
-      });
-      if(asstMin) asstMin.addEventListener('click', function(){ setAsst(false); });
-      document.addEventListener('keydown', function(e){
-        if(e.key === 'Escape' && document.body.classList.contains('asst-open')) setAsst(false);
-      });
-
-      function scrollLog(){ asstLog.scrollTop = asstLog.scrollHeight; }
-
-      function bubble(text, who){
-        var m = document.createElement('div');
-        m.className = 'msg ' + who;
-        String(text).split('\n').forEach(function(line, i){
-          if(i) m.appendChild(document.createElement('br'));
-          if(line) m.appendChild(document.createTextNode(line));
-        });
-        asstLog.appendChild(m);
-        scrollLog();
-        return m;
-      }
-
-      function typingBubble(){
-        var t = document.createElement('div');
-        t.className = 'msg bot typing';
-        t.innerHTML = '<span></span><span></span><span></span>';
-        asstLog.appendChild(t);
-        scrollLog();
-        return t;
-      }
-
-      function renderChips(keys){
-        asstChips.innerHTML = keys.map(function(k){
-          return '<button type="button" data-k="' + k + '">' + TOPICS[k].q + '</button>';
-        }).join('');
-        asstChips.classList.toggle('is-opening', !started);
-      }
-
-      function humanRow(){
-        var w = document.createElement('div');
-        w.className = 'msg-actions';
-        w.innerHTML =
-          '<a class="wa" href="' + WA_LINK + '" target="_blank" rel="noopener">WhatsApp us</a>'
-          + '<a href="mailto:hello@cognimorph.co">hello@cognimorph.co</a>';
-        asstLog.appendChild(w);
-        scrollLog();
-      }
-
-      function ctaRow(cta){
-        var w = document.createElement('div');
-        w.className = 'msg-actions';
-        w.innerHTML = '<a href="' + cta.href + '">' + cta.label + '</a>';
-        asstLog.appendChild(w);
-        scrollLog();
-      }
-
-      function answer(key){
-        var t = TOPICS[key];
-        if(!t) return;
-        started = true;
-        document.body.classList.add('asst-started');
-        asstChips.innerHTML = '';
-        var typing = typingBubble();
-        setTimeout(function(){
-          typing.remove();
-          bubble(t.a, 'bot');
-          if(t.human) humanRow();
-          if(t.cta) ctaRow(t.cta);
-          renderChips(t.next || ['start','human']);
-          scrollLog();
-        }, 520 + Math.random() * 280);
-      }
-
-      function greet(){
-        bubble('Hi — I can answer the common questions here, or put you in touch with someone on the team.', 'bot');
-        renderChips(OPENERS);
-      }
-
-      asstChips.addEventListener('click', function(e){
+        + '</form>';
+      document.body.appendChild(p);
+      panel = p;
+      log = p.querySelector('#asst-log');
+      chips = p.querySelector('#asst-chips');
+      form = p.querySelector('#asst-composer');
+      input = p.querySelector('#asst-input');
+      p.querySelector('#asst-min').addEventListener('click', function(){ setOpen(false); });
+      chips.addEventListener('click', function(e){
         var b = e.target.closest('button');
         if(!b) return;
         bubble(TOPICS[b.dataset.k].q, 'me');
         answer(b.dataset.k);
       });
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var text = (input.value || '').trim();
+        if(!text) return;
+        input.value = '';
+        bubble(text, 'me');
+        started = true;
+        chips.innerHTML = '';
+        for(var i = 0; i < ROUTES.length; i++){
+          if(ROUTES[i][0].test(text)){ answer(ROUTES[i][1]); return; }
+        }
+        var typing = typingBubble();
+        setTimeout(function(){
+          typing.remove();
+          bubble('That one is better answered by a person than by me. Send it to the team and you will get a proper reply within one business day.', 'bot');
+          humanRow();
+          renderChips(['services','pricing','start']);
+        }, 560);
+      });
+      // Force a reflow so the first open animates
+      void p.offsetWidth;
+    }
 
-      if(asstForm){
-        asstForm.addEventListener('submit', function(e){
-          e.preventDefault();
-          var text = (asstInput.value || '').trim();
-          if(!text) return;
-          asstInput.value = '';
-          bubble(text, 'me');
-          started = true;
-          document.body.classList.add('asst-started');
-          asstChips.innerHTML = '';
-
-          var key = null;
-          for(var i = 0; i < ROUTES.length; i++){
-            if(ROUTES[i][0].test(text)){ key = ROUTES[i][1]; break; }
-          }
-          if(key){ answer(key); return; }
-
-          var typing = typingBubble();
-          setTimeout(function(){
-            typing.remove();
-            bubble('That one is better answered by a person than by me. Send it to the team and you will get a proper reply within one business day.', 'bot');
-            humanRow();
-            renderChips(['services','pricing','start']);
-          }, 560);
-        });
+    function setOpen(open){
+      if(open && !panel) buildPanel();
+      document.body.classList.toggle('asst-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Close questions panel' : 'Open questions panel');
+      if(open){
+        if(!started) greet();
+        setTimeout(function(){
+          var f = started ? input : chips.querySelector('button');
+          if(f) f.focus();
+        }, 320);
+      } else {
+        btn.focus();
       }
     }
+    btn.addEventListener('click', function(){ setOpen(!document.body.classList.contains('asst-open')); });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && document.body.classList.contains('asst-open')) setOpen(false);
+    });
 
-    // Trigger the per-service animated panels when they scroll into view
-    var panels = document.querySelectorAll('.anim-panel');
-    if('IntersectionObserver' in window && panels.length){
-      var pio = new IntersectionObserver(function(entries){
-        entries.forEach(function(en){
-          if(en.isIntersecting){
-            en.target.classList.add('is-visible');
-            pio.unobserve(en.target);
-          }
-        });
-      }, { threshold: 0.25 });
-      panels.forEach(function(el){ pio.observe(el); });
-    } else {
-      panels.forEach(function(el){ el.classList.add('is-visible'); });
+    function scrollLog(){ log.scrollTop = log.scrollHeight; }
+    function bubble(text, who){
+      var m = document.createElement('div');
+      m.className = 'msg ' + who;
+      String(text).split('\n').forEach(function(line, i){
+        if(i) m.appendChild(document.createElement('br'));
+        if(line) m.appendChild(document.createTextNode(line));
+      });
+      log.appendChild(m);
+      scrollLog();
+      return m;
     }
-
-    // Scroll reveal — reserved for the most important content only
-    var revealEls = document.querySelectorAll('.reveal, .reveal-up, .reveal-left, .reveal-right, .reveal-scale');
-    if('IntersectionObserver' in window && revealEls.length){
-      var io = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){
-            entry.target.classList.add('is-visible');
-            io.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15 });
-      revealEls.forEach(function(el){ io.observe(el); });
-    } else {
-      revealEls.forEach(function(el){ el.classList.add('is-visible'); });
+    function typingBubble(){
+      var t = document.createElement('div');
+      t.className = 'msg bot typing';
+      t.setAttribute('aria-label', 'Typing');
+      t.innerHTML = '<span></span><span></span><span></span>';
+      log.appendChild(t);
+      scrollLog();
+      return t;
+    }
+    function renderChips(keys){
+      chips.innerHTML = keys.map(function(k){
+        return '<button type="button" data-k="' + k + '">' + TOPICS[k].q + '</button>';
+      }).join('');
+      chips.classList.toggle('is-opening', !started);
+    }
+    function actionRow(html){
+      var w = document.createElement('div');
+      w.className = 'msg-actions';
+      w.innerHTML = html;
+      log.appendChild(w);
+      scrollLog();
+    }
+    function humanRow(){
+      actionRow(
+        '<a class="primary" href="' + CONFIG.contactUrl + '">Contact form</a>'
+        + '<a href="mailto:' + CONFIG.email + '">' + CONFIG.email + '</a>'
+        + (WA_LINK ? '<a class="wa" href="' + WA_LINK + '" target="_blank" rel="noopener">WhatsApp us</a>' : '')
+      );
+    }
+    function answer(key){
+      var t = TOPICS[key];
+      if(!t) return;
+      started = true;
+      chips.innerHTML = '';
+      var typing = typingBubble();
+      setTimeout(function(){
+        typing.remove();
+        bubble(t.a, 'bot');
+        if(t.human) humanRow();
+        if(t.cta) actionRow('<a class="primary" href="' + CONFIG.contactUrl + '">Open the contact form</a>');
+        renderChips(t.next || ['start','human']);
+        scrollLog();
+      }, 520 + Math.random() * 280);
+    }
+    function greet(){
+      bubble('Hi — I can answer the common questions here, or put you in touch with someone on the team.', 'bot');
+      renderChips(OPENERS);
     }
   }
 

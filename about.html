@@ -2,7 +2,8 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(d){d.classList.add('js');var t=null;try{t=localStorage.getItem('cognimorph-theme')}catch(e){}d.setAttribute('data-theme',t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})(document.documentElement)</script>
 <title>About — Cognimorph</title>
 <meta name="description" content="Cognimorph is a Nepal-based team of specialists in digital build, digital growth, creative production and AI, helping businesses grow at every stage.">
 <meta property="og:url" content="https://cognimorph.co/about.html">
@@ -10,13 +11,22 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:title" content="About — Cognimorph">
 <meta property="og:description" content="We only grow when our clients grow. Here's how we work.">
-<meta property="og:image" content="assets/logo-horizontal.png">
-<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="assets/favicon-180.png">
+<meta property="og:image" content="https://cognimorph.co/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cognimorph — Intelligence. Creative. Digital.">
+<meta name="twitter:image" content="https://cognimorph.co/assets/og-image.jpg">
 <link rel="canonical" href="https://cognimorph.co/about.html">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/favicon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="assets/favicon-180.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1822" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="assets/fonts/source-serif-4-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/styles.min.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -41,25 +51,60 @@
 <body>
 
 <a class="skip-link" href="#main">Skip to content</a>
-<header id="site-header"></header>
+<header id="site-header">
+  <div class="site-header">
+    <div class="container nav-row">
+      <a class="brand" href="index.html" aria-label="Cognimorph home"><img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30"><img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30"></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="services.html">Services</a>
+        <a href="work.html">Work</a>
+        <a href="insights.html">Insights</a>
+        <a href="about.html" aria-current="page">About</a>
+        <a href="team.html">Team</a>
+      </nav>
+      <div class="nav-right">
+        <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-moon" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-sun" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg></button>
+        <a class="btn btn-primary" id="nav-cta" href="contact.html">Let&rsquo;s talk</a>
+        <button type="button" class="icon-btn menu-toggle" id="menu-open" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu" inert>
+    <div class="mobile-menu-top">
+      <a class="brand" href="index.html" aria-label="Cognimorph home"><img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30"><img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30"></a>
+      <button type="button" class="icon-btn mobile-menu-close" id="menu-close" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <nav class="mobile-menu-links" aria-label="Mobile">
+      <a href="services.html" style="--i:0"><span class="mnum" aria-hidden="true">01</span>Services</a>
+      <a href="work.html" style="--i:1"><span class="mnum" aria-hidden="true">02</span>Work</a>
+      <a href="insights.html" style="--i:2"><span class="mnum" aria-hidden="true">03</span>Insights</a>
+      <a href="about.html" aria-current="page" style="--i:3"><span class="mnum" aria-hidden="true">04</span>About</a>
+      <a href="team.html" style="--i:4"><span class="mnum" aria-hidden="true">05</span>Team</a>
+    </nav>
+    <div class="mobile-menu-foot">
+      <a class="btn btn-primary" href="contact.html">Let&rsquo;s talk <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="mail" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a>
+    </div>
+  </div>
+</header>
 
 <main id="main" tabindex="-1">
   <section class="page-header">
     <div class="container">
       <h1>Intelligence.<br>Creative. <em class="hl">Digital</em>.</h1>
       <p class="lede mt-2">Your <em class="hl">digital partner for the AI age</em>. We built Cognimorph on one belief: our business only makes sense if it&rsquo;s working for yours.</p>
-      <div class="media media-wide media-parallax reveal-scale mt-3"><picture><source srcset="assets/img-team.webp" type="image/webp"><img src="assets/img-team.jpg" alt="Abstract Cognimorph brand graphic" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+      <div class="media media-banner media-parallax reveal-media"><picture><source type="image/avif" srcset="assets/img-network-800.avif 800w, assets/img-network-1400.avif 1400w" sizes="(max-width: 1240px) 92vw, 1100px"><source type="image/webp" srcset="assets/img-network-800.webp 800w, assets/img-network-1400.webp 1400w" sizes="(max-width: 1240px) 92vw, 1100px"><img src="assets/img-network-1400.jpg" alt="Abstract network of connected nodes with one highlighted path, representing connected disciplines" fetchpriority="high" decoding="async" width="1400" height="875"></picture></div>
     </div>
   </section>
 
   <section class="hairline">
     <div class="container split">
       <div>
-        <h3>Built in Nepal. Ready for the world.</h3>
+        <h2 class="h3-size">Built in Nepal. Ready for the world.</h2>
         <p class="text-soft mt-2">Cognimorph is registered in Nepal and brings together experienced Nepali specialists across digital build, digital growth, creative production, and AI. We combine disciplines that are usually treated as separate services, so you get one accountable team instead of several disconnected vendors passing blame between each other.</p>
       </div>
       <div>
-        <h3>A long-term partner, not a one-off vendor.</h3>
+        <h2 class="h3-size">A long-term partner, not a one-off vendor.</h2>
         <p class="text-soft mt-2">We&rsquo;re not one generalist team stretched thin — we&rsquo;re specialists across four disciplines, working together on one outcome: your growth. We stay close after launch, not just through it, because the real work of growth happens after the first version ships.</p>
       </div>
     </div>
@@ -67,25 +112,26 @@
 
   <section class="bg-secondary hairline">
     <div class="container">
-      <h2>How we <em class="hl">think</em> about the work.</h2>
+      <span class="eyebrow">Principles</span>
+      <h2 class="reveal-up">How we <em class="hl">think</em> about the work.</h2>
       <div class="why-grid mt-3 stagger">
         <div class="why-item reveal-up">
-          <div class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg></div>
+          <div class="icon-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg></div>
           <h3>Strategy before technology</h3>
           <p class="text-soft">We start with the business problem you actually have, not the tool we&rsquo;d like to sell you.</p>
         </div>
         <div class="why-item reveal-up">
-          <div class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg></div>
+          <div class="icon-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg></div>
           <h3>AI with a purpose</h3>
           <p class="text-soft">We focus on the applications that create genuine value — not the ones that sound good in a pitch.</p>
         </div>
         <div class="why-item reveal-up">
-          <div class="icon-tile icon-orange"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 6l11 6-11 6V6z"/></svg></div>
+          <div class="icon-tile icon-orange" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 6l11 6-11 6V6z"/></svg></div>
           <h3>Ideas that get built</h3>
           <p class="text-soft">We turn strategy into working solutions, live campaigns, and finished creative — not decks that sit in a drive folder.</p>
         </div>
         <div class="why-item reveal-up">
-          <div class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></div>
+          <div class="icon-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg></div>
           <h3>Connected capabilities</h3>
           <p class="text-soft">Build, growth, creative and AI in one place, so nothing gets lost in translation between vendors.</p>
         </div>
@@ -96,11 +142,11 @@
   <section class="hairline">
     <div class="container split">
       <div>
-        <h3>We grow only when you do.</h3>
+        <h2 class="h3-size">We grow only when you do.</h2>
         <p class="text-soft mt-2">We don&rsquo;t measure ourselves by hours billed or slides presented. We measure ourselves by the same numbers you do — more customers, more revenue, less time wasted on things that don&rsquo;t work.</p>
       </div>
       <div>
-        <h3>Trust, built the slow way.</h3>
+        <h2 class="h3-size">Trust, built the slow way.</h2>
         <p class="text-soft mt-2">We say what we&rsquo;ll do, then we do it, then we show you the result. That&rsquo;s the whole method. No inflated promises before the contract, no disappearing after the invoice.</p>
       </div>
     </div>
@@ -109,17 +155,65 @@
   <section class="bg-navy cta-band">
     <div class="container">
       <div class="cta-row">
-        <h2>Want to know more about how we work?</h2>
+        <h2 class="reveal-up">Want to know more about how we work?</h2>
         <div>
-          <p class="text-soft" style="margin-bottom:1.4rem;max-width:38ch">Meet the team, or get in touch directly.</p>
-          <a class="btn btn-primary" href="team.html">Meet the team &rarr;</a>
+          <p class="text-soft">Meet the team, or get in touch directly.</p>
+          <div class="hero-ctas" style="margin-top:0">
+            <a class="btn btn-primary" href="contact.html">Get in touch <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+            <a class="btn btn-secondary btn-on-dark" href="team.html">Meet the team</a>
+          </div>
         </div>
       </div>
     </div>
   </section>
 </main>
 
-<footer id="site-footer"></footer>
-<script src="js/site.js"></script>
+<footer id="site-footer" class="site-footer bg-navy">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="114" height="28" loading="lazy">
+        <p>Your digital partner for the AI age. Growth, build, creative and AI — one expert team, built in Nepal for ambitious brands worldwide.</p>
+        <p><a class="footer-link" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a></p>
+      </div>
+      <div>
+        <h2>Capabilities</h2>
+        <ul>
+          <li><a href="services.html#build">Digital Build</a></li>
+          <li><a href="services.html#growth">Digital Growth</a></li>
+          <li><a href="services.html#creative">Creative</a></li>
+          <li><a href="services.html#ai">AI &amp; Automation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Company</h2>
+        <ul>
+          <li><a href="work.html">Work</a></li>
+          <li><a href="insights.html">Insights</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="team.html">Team</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Get in touch</h2>
+        <ul>
+          <li><a href="contact.html">Contact us</a></li>
+          <li><a href="mailto:hello@cognimorph.co">Email</a></li>
+          <li><a href="https://www.linkedin.com/company/cognimorph" target="_blank" rel="noopener">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="footer-disclaimer">Figures and case studies shown on this site are illustrative samples while client approvals are finalised. Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
+    <div class="footer-bottom">
+      <span>&copy; <span id="footer-year">2026</span> Cognimorph. All rights reserved.</span>
+      <div class="footer-bottom-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="#main">Back to top &uarr;</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="js/site.min.js" defer></script>
 </body>
 </html>

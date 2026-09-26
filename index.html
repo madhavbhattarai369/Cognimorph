@@ -2,7 +2,8 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(d){d.classList.add('js');var t=null;try{t=localStorage.getItem('cognimorph-theme')}catch(e){}d.setAttribute('data-theme',t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))})(document.documentElement)</script>
 <title>Cognimorph — Your digital partner for the AI age</title>
 <meta name="description" content="Cognimorph is a Nepal-based team building digital growth, websites and apps, creative production and AI automation for ambitious brands worldwide.">
 <meta property="og:url" content="https://cognimorph.co/">
@@ -10,15 +11,23 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:title" content="Cognimorph — Your digital partner for the AI age">
 <meta property="og:description" content="Digital growth, digital build, creative and AI — one expert team.">
-<meta property="og:image" content="assets/img-hero.jpg">
+<meta property="og:image" content="https://cognimorph.co/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cognimorph — Intelligence. Creative. Digital.">
+<meta name="twitter:image" content="https://cognimorph.co/assets/og-image.jpg">
 <meta property="og:type" content="website">
+<link rel="canonical" href="https://cognimorph.co/">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="assets/favicon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="assets/favicon-180.png">
-<link rel="canonical" href="https://cognimorph.co/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1822" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="assets/fonts/source-serif-4-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/styles.min.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -27,8 +36,8 @@
   "name": "Cognimorph",
   "alternateName": "CogniMorph",
   "url": "https://cognimorph.co/",
-  "logo": "https://cognimorph.co/assets/logo-horizontal.png",
-  "image": "https://cognimorph.co/assets/img-hero.jpg",
+  "logo": "https://cognimorph.co/assets/favicon-512.png",
+  "image": "https://cognimorph.co/assets/og-image.jpg",
   "description": "Cognimorph is a Nepal-based digital agency delivering performance marketing, website and app development, creative production, and AI automation for brands worldwide.",
   "slogan": "Intelligence. Creative. Digital.",
   "email": "hello@cognimorph.co",
@@ -175,55 +184,124 @@
 <body>
 
 <a class="skip-link" href="#main">Skip to content</a>
-<header id="site-header"></header>
+<header id="site-header">
+  <div class="site-header">
+    <div class="container nav-row">
+      <a class="brand" href="index.html" aria-label="Cognimorph home"><img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30"><img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30"></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="services.html">Services</a>
+        <a href="work.html">Work</a>
+        <a href="insights.html">Insights</a>
+        <a href="about.html">About</a>
+        <a href="team.html">Team</a>
+      </nav>
+      <div class="nav-right">
+        <button type="button" class="icon-btn theme-toggle" id="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-moon" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="icon-sun" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg></button>
+        <a class="btn btn-primary" id="nav-cta" href="contact.html">Let&rsquo;s talk</a>
+        <button type="button" class="icon-btn menu-toggle" id="menu-open" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu" inert>
+    <div class="mobile-menu-top">
+      <a class="brand" href="index.html" aria-label="Cognimorph home"><img class="logo-light" src="assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30"><img class="logo-dark" src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30"></a>
+      <button type="button" class="icon-btn mobile-menu-close" id="menu-close" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <nav class="mobile-menu-links" aria-label="Mobile">
+      <a href="services.html" style="--i:0"><span class="mnum" aria-hidden="true">01</span>Services</a>
+      <a href="work.html" style="--i:1"><span class="mnum" aria-hidden="true">02</span>Work</a>
+      <a href="insights.html" style="--i:2"><span class="mnum" aria-hidden="true">03</span>Insights</a>
+      <a href="about.html" style="--i:3"><span class="mnum" aria-hidden="true">04</span>About</a>
+      <a href="team.html" style="--i:4"><span class="mnum" aria-hidden="true">05</span>Team</a>
+    </nav>
+    <div class="mobile-menu-foot">
+      <a class="btn btn-primary" href="contact.html">Let&rsquo;s talk <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="mail" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a>
+    </div>
+  </div>
+</header>
 
 <main id="main" tabindex="-1">
 
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-ambient" aria-hidden="true">
+      <div class="grid"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+    </div>
     <div class="container hero-grid">
       <div class="line-host">
-        <h1>
+        <span class="eyebrow hero-rise" style="--d:0">Growth &middot; Build &middot; Creative &middot; AI</span>
+        <h1 id="hero-title">
           <span class="line-mask"><span>Intelligence.</span></span>
           <span class="line-mask"><span>Creative.</span></span>
           <span class="line-mask"><span class="hl">Digital.</span></span>
         </h1>
 
-        <div class="type-line-wrap">
-          <span class="prefix">We</span><span id="hero-type" data-phrases="build websites and apps that sell.|run your ads, SEO and social.|produce video, design and CGI.|automate the work AI should handle."></span><span class="type-cursor">&nbsp;</span>
+        <p class="sr-only">We build websites and apps that sell, run your ads, SEO and social, produce video, design and CGI, and automate the work AI should handle.</p>
+        <div class="type-line-wrap hero-rise" style="--d:1" aria-hidden="true">
+          <span class="prefix">We</span><span id="hero-type" data-phrases="build websites and apps that sell.|run your ads, SEO and social.|produce video, design and CGI.|automate the work AI should handle."></span><span class="type-cursor"></span>
         </div>
 
-        <p class="lede mt-2">Your <em class="hl">digital partner for the AI age</em> — seven years of performance marketing, product build, creative and AI, run by specialists out of Kathmandu for brands in twelve markets.</p>
+        <p class="lede mt-2 hero-rise" style="--d:2">Your <em class="hl">digital partner for the AI age</em> — seven years of performance marketing, product build, creative and AI, run by specialists out of Kathmandu for brands in twelve markets.</p>
 
-        <div class="hero-ctas">
-          <a class="btn btn-primary" href="contact.html">Start a project</a>
+        <div class="hero-ctas hero-rise" style="--d:3">
+          <a class="btn btn-primary" href="contact.html">Start a project <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
           <a class="btn btn-secondary" href="services.html">See what we do</a>
         </div>
       </div>
 
-      <div class="hero-visual tilt-wrap">
-        <svg class="cm-mark cm-animate tilt" viewBox="0 0 580 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cognimorph monogram: a C enclosing two mountain peaks">
-          <path class="cm-c" d="M306 88 A150 150 0 1 0 306 332"/>
-          <path class="peak peak-1" d="M250 340 L351 156 L452 340"/>
-          <path class="peak peak-2" d="M409 340 L440 150 L545 340"/>
+      <div class="hero-visual cm-animate" id="hero-visual">
+        <div class="mark-halo" aria-hidden="true"></div>
+        <div class="mark-ring" aria-hidden="true"></div>
+        <svg class="cm-mark" viewBox="0 0 580 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cognimorph monogram: a C enclosing two mountain peaks">
+          <defs>
+            <linearGradient id="cm-sheen-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+              <stop offset=".5" stop-color="#fff" stop-opacity=".8"/>
+              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <mask id="cm-m-c" maskUnits="userSpaceOnUse" x="-120" y="-120" width="820" height="660">
+              <path d="M306 88 A150 150 0 1 0 306 332" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round"/>
+            </mask>
+            <mask id="cm-m-p1" maskUnits="userSpaceOnUse" x="-120" y="-120" width="820" height="660">
+              <path d="M250 340 L351 156 L452 340" fill="none" stroke="#fff" stroke-width="34" stroke-miterlimit="12"/>
+            </mask>
+            <mask id="cm-m-p2" maskUnits="userSpaceOnUse" x="-120" y="-120" width="820" height="660">
+              <path d="M409 340 L440 150 L545 340" fill="none" stroke="#fff" stroke-width="34" stroke-miterlimit="12"/>
+            </mask>
+          </defs>
+          <g class="cm-layer" data-layer="c">
+            <path class="cm-c" d="M306 88 A150 150 0 1 0 306 332"/>
+            <g mask="url(#cm-m-c)"><g transform="rotate(18 290 210)"><rect class="cm-sheen" x="-150" y="-260" width="110" height="940"/></g></g>
+          </g>
+          <g class="cm-layer" data-layer="p1">
+            <path class="peak peak-1" d="M250 340 L351 156 L452 340"/>
+            <g mask="url(#cm-m-p1)"><g transform="rotate(18 290 210)"><rect class="cm-sheen" x="-150" y="-260" width="110" height="940"/></g></g>
+          </g>
+          <g class="cm-layer" data-layer="p2">
+            <path class="peak peak-2" d="M409 340 L440 150 L545 340"/>
+            <g mask="url(#cm-m-p2)"><g transform="rotate(18 290 210)"><rect class="cm-sheen" x="-150" y="-260" width="110" height="940"/></g></g>
+          </g>
         </svg>
       </div>
     </div>
     <div class="container">
-      <a class="scroll-cue" href="#services-preview" aria-label="Scroll to what we do">
-        <span>Scroll</span>
+      <a class="scroll-cue" href="#services-preview">
+        <span>Scroll to explore</span>
         <span class="cue-line" aria-hidden="true"></span>
       </a>
     </div>
   </section>
 
   <!-- CLIENT MARQUEE -->
-  <section class="section-tight hairline hairline-bottom" style="padding:2.2rem 0">
+  <section class="marquee-section hairline hairline-bottom" aria-label="Clients">
     <div class="container">
-      <p class="form-note" style="margin-bottom:1rem">Trusted by Nepali and international brands <span class="sample-inline">· sample names shown</span></p>
+      <p class="marquee-label">Trusted by Nepali and international brands <span class="sample-inline">· sample names shown</span></p>
     </div>
     <div class="marquee">
-      <div class="marquee-track" id="marquee-track"></div>
+      <ul class="marquee-track" id="marquee-track"></ul>
     </div>
   </section>
 
@@ -235,10 +313,10 @@
 
       <!-- 01 GROWTH -->
       <div class="svc">
-        <div class="svc-media reveal-scale">
+        <div class="svc-media reveal-media">
           <div class="anim-panel">
-            <picture><source srcset="assets/img-growth.webp" type="image/webp"><img src="assets/img-growth.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="1000" height="750"></picture>
-            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated chart showing growth over time">
+            <picture><source type="image/avif" srcset="assets/img-growth-600.avif 600w, assets/img-growth-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-growth-600.webp 600w, assets/img-growth-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-growth-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
+            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <g stroke="rgba(255,255,255,.28)" stroke-width="1">
                 <line x1="50" y1="270" x2="440" y2="270"/><line x1="50" y1="200" x2="440" y2="200"/>
                 <line x1="50" y1="130" x2="440" y2="130"/><line x1="50" y1="60" x2="440" y2="60"/>
@@ -284,10 +362,10 @@
 
       <!-- 02 BUILD -->
       <div class="svc">
-        <div class="svc-media reveal-scale">
+        <div class="svc-media reveal-media">
           <div class="anim-panel">
-            <picture><source srcset="assets/img-build.webp" type="image/webp"><img src="assets/img-build.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="1000" height="750"></picture>
-            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated browser window being built">
+            <picture><source type="image/avif" srcset="assets/img-build-600.avif 600w, assets/img-build-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-build-600.webp 600w, assets/img-build-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-build-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
+            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <rect class="dash" style="--len:1100" x="70" y="55" width="340" height="220" rx="6"
                     fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.55)" stroke-width="2"/>
               <line class="dash" style="--len:340;animation-delay:.6s" x1="70" y1="90" x2="410" y2="90" stroke="rgba(255,255,255,.45)" stroke-width="2"/>
@@ -321,10 +399,10 @@
 
       <!-- 03 CREATIVE -->
       <div class="svc">
-        <div class="svc-media reveal-scale">
+        <div class="svc-media reveal-media">
           <div class="anim-panel">
-            <picture><source srcset="assets/img-creative.webp" type="image/webp"><img src="assets/img-creative.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="1000" height="750"></picture>
-            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated video player and timeline">
+            <picture><source type="image/avif" srcset="assets/img-creative-600.avif 600w, assets/img-creative-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-creative-600.webp 600w, assets/img-creative-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-creative-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
+            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <circle class="pulse-ring" cx="240" cy="140" r="46" fill="none" stroke="#F47A32" stroke-width="2"/>
               <circle class="pulse-ring" cx="240" cy="140" r="46" fill="none" stroke="#F47A32" stroke-width="2" style="animation-delay:1.5s"/>
               <circle class="dash" style="--len:290" cx="240" cy="140" r="46" fill="rgba(0,0,0,.25)" stroke="#fff" stroke-opacity=".85" stroke-width="3"/>
@@ -351,10 +429,10 @@
 
       <!-- 04 AI -->
       <div class="svc">
-        <div class="svc-media reveal-scale">
+        <div class="svc-media reveal-media">
           <div class="anim-panel">
-            <picture><source srcset="assets/img-ai.webp" type="image/webp"><img src="assets/img-ai.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="1000" height="750"></picture>
-            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated neural network of connected nodes">
+            <picture><source type="image/avif" srcset="assets/img-ai-600.avif 600w, assets/img-ai-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-ai-600.webp 600w, assets/img-ai-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-ai-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
+            <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <g stroke="rgba(255,255,255,.4)" stroke-width="1.6" fill="none">
                 <path class="dash" style="--len:180" d="M95 90 L215 60"/>
                 <path class="dash" style="--len:180;animation-delay:.1s" d="M95 90 L215 165"/>
@@ -394,7 +472,7 @@
   <!-- EXPERTISE -->
   <section class="bg-secondary hairline">
     <div class="container">
-      <div class="split" style="align-items:center">
+      <div class="split split-center">
         <div>
           <span class="eyebrow">What we know</span>
           <h2 class="reveal-up">Seven years inside the <em class="hl">platforms</em>, the data and the psychology.</h2>
@@ -453,8 +531,24 @@
     </div>
   </section>
 
+  <!-- BAND: Kathmandu to the world -->
+  <section class="band" aria-labelledby="band-title">
+    <div class="band-media" aria-hidden="true">
+      <picture>
+        <source type="image/avif" srcset="assets/img-terrain-900.avif 900w, assets/img-terrain-1600.avif 1600w, assets/img-terrain-2400.avif 2400w" sizes="100vw">
+        <source type="image/webp" srcset="assets/img-terrain-900.webp 900w, assets/img-terrain-1600.webp 1600w, assets/img-terrain-2400.webp 2400w" sizes="100vw">
+        <img src="assets/img-terrain-2400.jpg" alt="" loading="lazy" decoding="async" width="2400" height="1100">
+      </picture>
+    </div>
+    <div class="container band-copy">
+      <span class="eyebrow">Kathmandu &rarr; worldwide</span>
+      <h2 class="reveal-up" id="band-title">Built in Nepal. <em>Ready for the world.</em></h2>
+      <p class="reveal-up">Specialists working out of Kathmandu for brands across South Asia, the Gulf, the United Kingdom and Singapore &mdash; mapped to your market, measured in your numbers.</p>
+    </div>
+  </section>
+
   <!-- PULL QUOTE -->
-  <section class="hairline">
+  <section>
     <div class="container pullquote reveal-up">
       <span class="pq-mark">&ldquo;</span>
       <blockquote>The only way to do great work is to love what you do.</blockquote>
@@ -469,11 +563,11 @@
       <span class="eyebrow">Process</span>
       <h2 class="reveal-up">How we <em class="hl">work</em>.</h2>
       <div class="approach-row stagger">
-        <div class="approach-step reveal-up"><div class="num-badge">01</div><h4>Understand</h4><p>We learn your business first.</p></div>
-        <div class="approach-step reveal-up"><div class="num-badge">02</div><h4>Plan</h4><p>We pick the few moves that matter.</p></div>
-        <div class="approach-step reveal-up"><div class="num-badge">03</div><h4>Build</h4><p>We make the real thing.</p></div>
-        <div class="approach-step reveal-up"><div class="num-badge">04</div><h4>Launch</h4><p>We ship and stay close.</p></div>
-        <div class="approach-step reveal-up"><div class="num-badge">05</div><h4>Improve</h4><p>We cut what doesn&rsquo;t work.</p></div>
+        <div class="approach-step reveal-up"><div class="num-badge">01</div><h3>Understand</h3><p>We learn your business first.</p></div>
+        <div class="approach-step reveal-up"><div class="num-badge">02</div><h3>Plan</h3><p>We pick the few moves that matter.</p></div>
+        <div class="approach-step reveal-up"><div class="num-badge">03</div><h3>Build</h3><p>We make the real thing.</p></div>
+        <div class="approach-step reveal-up"><div class="num-badge">04</div><h3>Launch</h3><p>We ship and stay close.</p></div>
+        <div class="approach-step reveal-up"><div class="num-badge">05</div><h3>Improve</h3><p>We cut what doesn&rsquo;t work.</p></div>
       </div>
     </div>
   </section>
@@ -495,9 +589,7 @@
 
       <div class="tool-field reveal-up" id="tool-field"></div>
 
-      <div class="tool-readout" id="tool-readout">
-        
-      </div>
+      <div class="tool-readout" id="tool-readout" aria-live="polite"></div>
     </div>
   </section>
 
@@ -510,42 +602,42 @@
 
       <div class="ind-grid stagger">
         <article class="ind reveal-up">
-          <div class="ind-media"><picture><source srcset="assets/ind-saas.webp" type="image/webp"><img src="assets/ind-saas.jpg" alt="Abstract dashboard graphic representing SaaS" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+          <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-saas-600.avif 600w, assets/ind-saas-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-saas-600.webp 600w, assets/ind-saas-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-saas-1000.jpg" alt="Abstract dashboard graphic representing SaaS" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>SaaS &amp; B2B</h3>
             <p>Long cycles, many stakeholders. We build for pipeline and demo bookings, not raw traffic.</p>
           </div>
         </article>
         <article class="ind reveal-up">
-          <div class="ind-media"><picture><source srcset="assets/ind-ecommerce.webp" type="image/webp"><img src="assets/ind-ecommerce.jpg" alt="Abstract product grid graphic representing e-commerce" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+          <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-ecommerce-600.avif 600w, assets/ind-ecommerce-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-ecommerce-600.webp 600w, assets/ind-ecommerce-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-ecommerce-1000.jpg" alt="Abstract product grid graphic representing e-commerce" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>E-commerce &amp; retail</h3>
             <p>Catalogue feeds, creative volume and clean attribution — the three things that decide margin.</p>
           </div>
         </article>
         <article class="ind reveal-up">
-          <div class="ind-media"><picture><source srcset="assets/ind-yoga.webp" type="image/webp"><img src="assets/ind-yoga.jpg" alt="Concentric calm circles representing wellness" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+          <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-yoga-600.avif 600w, assets/ind-yoga-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-yoga-600.webp 600w, assets/ind-yoga-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-yoga-1000.jpg" alt="Concentric calm circles representing wellness" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>Yoga &amp; wellness</h3>
             <p>Trust is earned slowly here. Content and community do the work that hard selling can&rsquo;t.</p>
           </div>
         </article>
         <article class="ind reveal-up">
-          <div class="ind-media"><picture><source srcset="assets/ind-beauty.webp" type="image/webp"><img src="assets/ind-beauty.jpg" alt="Soft petal arcs representing beauty products" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+          <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-beauty-600.avif 600w, assets/ind-beauty-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-beauty-600.webp 600w, assets/ind-beauty-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-beauty-1000.jpg" alt="Soft petal arcs representing beauty products" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>Beauty &amp; personal care</h3>
             <p>Creative-led and proof-driven. Before-and-after, UGC and repeat purchase economics.</p>
           </div>
         </article>
         <article class="ind reveal-up">
-          <div class="ind-media"><picture><source srcset="assets/ind-fmcg.webp" type="image/webp"><img src="assets/ind-fmcg.jpg" alt="Shelf grid representing FMCG" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+          <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-fmcg-600.avif 600w, assets/ind-fmcg-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-fmcg-600.webp 600w, assets/ind-fmcg-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-fmcg-1000.jpg" alt="Shelf grid representing FMCG" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>FMCG</h3>
             <p>Reach and distribution first, with brand consistency that holds across every shelf and feed.</p>
           </div>
         </article>
         <article class="ind reveal-up">
-          <div class="ind-media"><picture><source srcset="assets/ind-realestate.webp" type="image/webp"><img src="assets/ind-realestate.jpg" alt="Building skyline representing real estate" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
+          <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-realestate-600.avif 600w, assets/ind-realestate-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-realestate-600.webp 600w, assets/ind-realestate-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-realestate-1000.jpg" alt="Building skyline representing real estate" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>Real estate</h3>
             <p>High-value, low-volume leads. Qualification matters more than cost per enquiry.</p>
@@ -582,7 +674,7 @@
           </div>
         </div>
       </div>
-      <div class="mt-3"><a class="btn btn-secondary" href="work.html">See all work</a></div>
+      <div class="mt-3"><a class="btn btn-secondary" href="work.html">See all work <span class="btn-arrow" aria-hidden="true">&rarr;</span></a></div>
     </div>
   </section>
 
@@ -592,8 +684,8 @@
       <div class="cta-row">
         <h2 class="reveal-up">Have something worth building?</h2>
         <div class="reveal-up">
-          <p class="text-soft" style="margin-bottom:1.4rem;max-width:34ch">Tell us what you want to grow. We&rsquo;ll tell you how we&rsquo;d approach it.</p>
-          <a class="btn btn-primary" href="contact.html">Start a project &rarr;</a>
+          <p class="text-soft">Tell us what you want to grow. We&rsquo;ll tell you how we&rsquo;d approach it.</p>
+          <a class="btn btn-primary" href="contact.html">Start a project <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
         </div>
       </div>
     </div>
@@ -601,8 +693,54 @@
 
 </main>
 
-<footer id="site-footer"></footer>
+<footer id="site-footer" class="site-footer bg-navy">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="114" height="28" loading="lazy">
+        <p>Your digital partner for the AI age. Growth, build, creative and AI — one expert team, built in Nepal for ambitious brands worldwide.</p>
+        <p><a class="footer-link" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a></p>
+      </div>
+      <div>
+        <h2>Capabilities</h2>
+        <ul>
+          <li><a href="services.html#build">Digital Build</a></li>
+          <li><a href="services.html#growth">Digital Growth</a></li>
+          <li><a href="services.html#creative">Creative</a></li>
+          <li><a href="services.html#ai">AI &amp; Automation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Company</h2>
+        <ul>
+          <li><a href="work.html">Work</a></li>
+          <li><a href="insights.html">Insights</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="team.html">Team</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Get in touch</h2>
+        <ul>
+          <li><a href="contact.html">Contact us</a></li>
+          <li><a href="mailto:hello@cognimorph.co">Email</a></li>
+          <li><a href="https://www.linkedin.com/company/cognimorph" target="_blank" rel="noopener">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="footer-disclaimer">Figures and case studies shown on this site are illustrative samples while client approvals are finalised. Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
+    <div class="footer-bottom">
+      <span>&copy; <span id="footer-year">2026</span> Cognimorph. All rights reserved.</span>
+      <div class="footer-bottom-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="#main">Back to top &uarr;</a>
+      </div>
+    </div>
+  </div>
+</footer>
 
-<script src="js/site.js"></script>
+<script src="js/site.min.js" defer></script>
+<script src="js/home.min.js" defer></script>
 </body>
 </html>
