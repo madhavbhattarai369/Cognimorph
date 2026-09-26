@@ -234,7 +234,7 @@
           <span class="prefix">We</span><span id="hero-type" data-phrases="build websites and apps that sell.|run your ads, SEO and social.|produce video, design and CGI.|automate the work AI should handle."></span><span class="type-cursor"></span>
         </div>
 
-        <p class="lede mt-2 hero-rise" style="--d:2">Your <em class="hl">digital partner for the AI age</em> — seven years of performance marketing, product build, creative and AI, built by an expert team in Nepal and trusted by brands in Dubai, Singapore, the UK, Australia and the USA.</p>
+        <p class="lede mt-2 hero-rise" style="--d:2">Your <em class="hl">digital partner for the AI age</em>. One senior team for performance marketing, product build, creative and AI, built in Nepal and accessible globally.</p>
 
         <div class="hero-ctas hero-rise" style="--d:3">
           <a class="btn btn-primary btn-magnetic" href="contact.html">Start a project <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
@@ -266,6 +266,11 @@
               <path d="M409 340 L440 150 L545 340" fill="none" stroke="#fff" stroke-width="34" stroke-miterlimit="12"/>
             </mask>
           </defs>
+          <g class="cm-threads" aria-hidden="true">
+            <line data-t="0"/><line data-t="1"/><line data-t="2"/><line data-t="3"/>
+            <line class="flow" data-t="0"/><line class="flow" data-t="1" style="animation-delay:-.7s"/><line class="flow" data-t="2" style="animation-delay:-1.4s"/><line class="flow" data-t="3" style="animation-delay:-.35s"/>
+            <circle r="5" data-n="0"/><circle r="5" data-n="1"/><circle r="5" data-n="2"/><circle r="5" data-n="3"/><circle r="5" data-n="4"/>
+          </g>
           <g class="cm-layer" data-layer="c">
             <path class="cm-c" d="M306 88 A150 150 0 1 0 306 332"/>
             <g mask="url(#cm-m-c)"><g transform="rotate(18 290 210)"><rect class="cm-sheen" x="-150" y="-260" width="110" height="940"/></g></g>
@@ -299,25 +304,114 @@
     </div>
   </section>
 
-  <!-- MANIFESTO: words light up as you read -->
-  <section class="manifesto" aria-label="Who we are">
-    <div class="container">
-      <span class="eyebrow">Who we are</span>
-      <p class="manifesto-text" data-scrub>An expert team built in Nepal and accessible globally. We turn attention into revenue for brands in <em>Dubai, Singapore, the UK, Australia and the USA</em>, with performance marketing, product build, creative and AI working as one team.</p>
+  <!-- MANIFESTO: statement + live integration diagram -->
+  <section class="manifesto" aria-labelledby="manifesto-title">
+    <div class="container manifesto-grid">
+      <div>
+        <span class="eyebrow">Who we are</span>
+        <h2 class="manifesto-text" id="manifesto-title" data-scrub>We turn attention into revenue. Strategy, media, product and creative run by <em>one accountable team</em>, so nothing gets lost between vendors.</h2>
+        <a class="svc-link mt-2" href="about.html">How we work together <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+      </div>
+      <figure class="orbit" aria-label="Growth, Build, Creative and AI connected into one Cognimorph team">
+        <svg class="orbit-svg" viewBox="0 0 440 440" aria-hidden="true" focusable="false">
+          <circle class="orbit-ring" cx="220" cy="220" r="150"/>
+          <circle class="orbit-ring orbit-ring-2" cx="220" cy="220" r="96"/>
+          <g class="orbit-links">
+            <path class="o-link" d="M220 70 Q220 150 220 176"/>
+            <path class="o-link" d="M370 220 Q290 220 264 220"/>
+            <path class="o-link" d="M220 370 Q220 290 220 264"/>
+            <path class="o-link" d="M70 220 Q150 220 176 220"/>
+            <path class="o-flow" d="M220 70 Q220 150 220 176"/>
+            <path class="o-flow" d="M370 220 Q290 220 264 220" style="animation-delay:-.6s"/>
+            <path class="o-flow" d="M220 370 Q220 290 220 264" style="animation-delay:-1.2s"/>
+            <path class="o-flow" d="M70 220 Q150 220 176 220" style="animation-delay:-1.8s"/>
+          </g>
+          <g class="orbit-core">
+            <circle cx="220" cy="220" r="44"/>
+            <path class="core-c" d="M229 202 A24 24 0 1 0 229 238"/>
+            <path class="core-p" d="M212 240 L226 212 L240 240"/>
+            <path class="core-p" d="M232 240 L237 211 L252 240"/>
+          </g>
+        </svg>
+        <span class="o-node" style="--x:50%;--y:15.9%" data-k="growth">Growth</span>
+        <span class="o-node" style="--x:84.1%;--y:50%" data-k="build">Build</span>
+        <span class="o-node" style="--x:50%;--y:84.1%" data-k="creative">Creative</span>
+        <span class="o-node" style="--x:15.9%;--y:50%" data-k="ai">AI</span>
+      </figure>
     </div>
   </section>
 
-  <!-- SERVICES -->
+  <!-- SERVICES: interactive showcase (hover, click, keyboard or auto-advance) -->
   <section id="services-preview">
     <div class="container">
-      <span class="eyebrow">Solutions</span>
-      <h2 class="reveal-up">What we <em class="hl">do</em>.</h2>
-
-      <div class="svc-stack">
-      <!-- 01 GROWTH -->
-      <div class="svc">
-        <div class="svc-media reveal-media">
-          <div class="anim-panel">
+      <div class="section-intro">
+        <div>
+          <span class="eyebrow">Solutions</span>
+          <h2 class="reveal-up">What we <em class="hl">do</em>.</h2>
+        </div>
+        <p class="lede">Hover or tap a service to see how each one drives growth.</p>
+      </div>
+      <div class="svc-show reveal-up">
+        <div class="svc-list">
+        <div class="svc-item is-active" data-i="0">
+          <h3 class="svc-head">
+            <button type="button" class="svc-tab" id="svc-tab-0" aria-expanded="true" aria-controls="svc-detail-0">
+              <span class="svc-num">01</span><span class="svc-name">Digital Growth &amp; Performance Marketing</span><span class="svc-plus" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="svc-detail" id="svc-detail-0"><div class="svc-detail-inner">
+            <p class="svc-title">Digital marketing that brings the <em class="hl">right people</em> to you.</p>
+            <p class="svc-copy">Paid media planned, bought and optimised in-house, with full-funnel tracking on every campaign so you see what each dollar returned.</p>
+            <div class="tags"><span>Performance marketing</span><span>Paid social &amp; search</span><span>Social media</span><span>SEO &amp; AEO</span></div>
+            <a class="svc-link" href="services.html#growth">Explore digital growth <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+          </div></div>
+          <span class="svc-timer" aria-hidden="true"></span>
+        </div>
+        <div class="svc-item" data-i="1">
+          <h3 class="svc-head">
+            <button type="button" class="svc-tab" id="svc-tab-1" aria-expanded="false" aria-controls="svc-detail-1">
+              <span class="svc-num">02</span><span class="svc-name">Digital Build</span><span class="svc-plus" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="svc-detail" id="svc-detail-1"><div class="svc-detail-inner">
+            <p class="svc-title">Websites and apps people find <em class="hl">easy to use</em>.</p>
+            <p class="svc-copy">Interfaces designed around how people actually behave: where they look first, what they trust, where they drop off. Built fast, then maintained.</p>
+            <div class="tags"><span>Web development</span><span>App development</span><span>Software</span><span>Maintenance</span></div>
+            <a class="svc-link" href="services.html#build">Explore digital build <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+          </div></div>
+          <span class="svc-timer" aria-hidden="true"></span>
+        </div>
+        <div class="svc-item" data-i="2">
+          <h3 class="svc-head">
+            <button type="button" class="svc-tab" id="svc-tab-2" aria-expanded="false" aria-controls="svc-detail-2">
+              <span class="svc-num">03</span><span class="svc-name">Creative</span><span class="svc-plus" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="svc-detail" id="svc-detail-2"><div class="svc-detail-inner">
+            <p class="svc-title">Video and design people <em class="hl">stop to watch</em>.</p>
+            <p class="svc-copy">From a single edit to a full campaign, produced in-house and cut for every placement from one plan.</p>
+            <div class="tags"><span>Video editing</span><span>Graphic design</span><span>CGI</span><span>AI video</span></div>
+            <a class="svc-link" href="services.html#creative">Explore creative <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+          </div></div>
+          <span class="svc-timer" aria-hidden="true"></span>
+        </div>
+        <div class="svc-item" data-i="3">
+          <h3 class="svc-head">
+            <button type="button" class="svc-tab" id="svc-tab-3" aria-expanded="false" aria-controls="svc-detail-3">
+              <span class="svc-num">04</span><span class="svc-name">AI &amp; Automation</span><span class="svc-plus" aria-hidden="true"></span>
+            </button>
+          </h3>
+          <div class="svc-detail" id="svc-detail-3"><div class="svc-detail-inner">
+            <p class="svc-title">AI that gives your team <em class="hl">its week back</em>.</p>
+            <p class="svc-copy">We automate the repetitive work inside your business, then train your people to run and extend it.</p>
+            <div class="tags"><span>Workflow automation</span><span>AI consulting</span><span>Team training</span></div>
+            <a class="svc-link" href="services.html#ai">Explore AI &amp; automation <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
+          </div></div>
+          <span class="svc-timer" aria-hidden="true"></span>
+        </div>
+        </div>
+        <div class="svc-stage" aria-hidden="true">
+        <div class="anim-panel svc-panel is-active" data-i="0">
             <picture><source type="image/avif" srcset="assets/img-growth-600.avif 600w, assets/img-growth-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-growth-600.webp 600w, assets/img-growth-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-growth-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
             <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <g stroke="rgba(255,255,255,.28)" stroke-width="1">
@@ -348,25 +442,7 @@
               </g>
             </svg>
           </div>
-        </div>
-        <div class="reveal-right">
-          <div class="svc-kicker">01 — Digital Growth &amp; Performance Marketing</div>
-          <h3>Digital marketing that brings the <em class="hl">right people</em> to you.</h3>
-          <p>Paid media planned, bought and optimised in-house. Full-funnel tracking on every campaign, so you see what each rupee returned.</p>
-          <div class="tags"><span>Performance marketing</span><span>Paid social &amp; search</span><span>Social media management</span><span>SEO &amp; AEO</span></div>
-          <div class="platform-row">
-            <span class="plat"><span class="dot" style="background:#0866FF"></span>Meta</span>
-            <span class="plat"><span class="dot" style="background:#EA4335"></span>Google</span>
-            <span class="plat"><span class="dot" style="background:#111"></span>TikTok</span>
-            <span class="plat"><span class="dot" style="background:#0A66C2"></span>LinkedIn</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 02 BUILD -->
-      <div class="svc">
-        <div class="svc-media reveal-media">
-          <div class="anim-panel">
+        <div class="anim-panel svc-panel" data-i="1">
             <picture><source type="image/avif" srcset="assets/img-build-600.avif 600w, assets/img-build-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-build-600.webp 600w, assets/img-build-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-build-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
             <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <rect class="dash" style="--len:1100" x="70" y="55" width="340" height="220" rx="6"
@@ -391,19 +467,7 @@
               <rect class="blink" x="164" y="232" width="3" height="24" fill="#F47A32"/>
             </svg>
           </div>
-        </div>
-        <div class="reveal-left">
-          <div class="svc-kicker">02 — Digital Build</div>
-          <h3>Websites and apps people find <em class="hl">easy to use</em>.</h3>
-          <p>Interface decisions follow how people actually behave — where they look first, what they trust, where they abandon. We design and build to that, then maintain it.</p>
-          <div class="tags"><span>Web development</span><span>App development</span><span>Software</span><span>Maintenance</span></div>
-        </div>
-      </div>
-
-      <!-- 03 CREATIVE -->
-      <div class="svc">
-        <div class="svc-media reveal-media">
-          <div class="anim-panel">
+        <div class="anim-panel svc-panel" data-i="2">
             <picture><source type="image/avif" srcset="assets/img-creative-600.avif 600w, assets/img-creative-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-creative-600.webp 600w, assets/img-creative-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-creative-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
             <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <circle class="pulse-ring" cx="240" cy="140" r="46" fill="none" stroke="#F47A32" stroke-width="2"/>
@@ -421,19 +485,7 @@
               <g class="sweep"><rect x="70" y="212" width="4" height="58" fill="#F47A32"/></g>
             </svg>
           </div>
-        </div>
-        <div class="reveal-right">
-          <div class="svc-kicker">03 — Creative</div>
-          <h3>Video and design people actually <em class="hl">stop to watch</em>.</h3>
-          <p>From a single edit to a full campaign, produced in-house.</p>
-          <div class="tags"><span>Video editing</span><span>Graphic design</span><span>CGI</span><span>AI video</span></div>
-        </div>
-      </div>
-
-      <!-- 04 AI -->
-      <div class="svc">
-        <div class="svc-media reveal-media">
-          <div class="anim-panel">
+        <div class="anim-panel svc-panel" data-i="3">
             <picture><source type="image/avif" srcset="assets/img-ai-600.avif 600w, assets/img-ai-900.avif 900w" sizes="(max-width: 860px) 92vw, 540px"><source type="image/webp" srcset="assets/img-ai-600.webp 600w, assets/img-ai-900.webp 900w" sizes="(max-width: 860px) 92vw, 540px"><img src="assets/img-ai-900.jpg" alt="" class="panel-bg" loading="lazy" decoding="async" width="900" height="675"></picture>
             <svg class="panel-svg" viewBox="0 0 480 330" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
               <g stroke="rgba(255,255,255,.4)" stroke-width="1.6" fill="none">
@@ -462,13 +514,6 @@
             </svg>
           </div>
         </div>
-        <div class="reveal-left">
-          <div class="svc-kicker">04 — AI &amp; Automation</div>
-          <h3>AI that gives your team <em class="hl">its week back</em>.</h3>
-          <p>We automate the repetitive work, then train your people to run it.</p>
-          <div class="tags"><span>Automation</span><span>Consulting</span><span>Training</span></div>
-        </div>
-      </div>
       </div>
     </div>
   </section>
@@ -486,7 +531,7 @@
         <div>
           <span class="eyebrow">What we know</span>
           <h2 class="reveal-up">Seven years inside the <em class="hl">platforms</em>, the data and the psychology.</h2>
-          <p class="lede mt-2">An expert team in Nepal running performance marketing, build, creative and AI for brands in Dubai, Singapore, the UK, Australia and the USA.</p>
+          <p class="lede mt-2">Every platform rewards different behaviour, and each one shifts quarterly. Knowing what it currently optimises for is most of the job.</p>
         </div>
         <div class="icon-cloud reveal-scale" id="icon-cloud" aria-hidden="true"></div>
       </div>
@@ -498,7 +543,7 @@
         </div>
         <div class="exp-item reveal-up">
           <h3>We read the algorithms as they change</h3>
-          <p>Meta, Google, TikTok and search each reward different behaviour, and each shifts quarterly. Knowing what a platform is currently optimising for is most of the job.</p>
+          <p>We track what Meta, Google, TikTok and search reward right now, and move budget and creative before performance slips.</p>
         </div>
         <div class="exp-item reveal-up">
           <h3>We work at the front of the AI curve</h3>
@@ -531,7 +576,7 @@
         </div>
         <div class="metric-cell reveal-up">
           <div class="mv"><span class="count" data-to="12">0</span></div>
-          <div class="ml">Markets served, from Dubai to the USA</div>
+          <div class="ml">Markets served across five core regions</div>
         </div>
         <div class="metric-cell reveal-up">
           <div class="mv"><span class="count" data-to="4">0</span></div>
@@ -541,29 +586,20 @@
     </div>
   </section>
 
-  <!-- BAND: Kathmandu to the world -->
+  <!-- BAND: Nepal connected to the world (live network canvas) -->
   <section class="band" aria-labelledby="band-title">
-    <div class="band-media" aria-hidden="true">
-      <picture>
-        <source type="image/avif" srcset="assets/img-terrain-900.avif 900w, assets/img-terrain-1600.avif 1600w, assets/img-terrain-2400.avif 2400w" sizes="100vw">
-        <source type="image/webp" srcset="assets/img-terrain-900.webp 900w, assets/img-terrain-1600.webp 1600w, assets/img-terrain-2400.webp 2400w" sizes="100vw">
-        <img src="assets/img-terrain-2400.jpg" alt="" loading="lazy" decoding="async" width="2400" height="1100">
-      </picture>
-    </div>
-    <div class="container band-copy">
-      <span class="eyebrow">Nepal &rarr; the world</span>
-      <h2 class="reveal-up" id="band-title">Built in Nepal. <em>Accessible globally.</em></h2>
-      <p class="reveal-up">An expert team working across time zones for clients in Dubai, Singapore, the United Kingdom, Australia and the United States. Mapped to your market, measured in your numbers.</p>
-    </div>
-  </section>
-
-  <!-- PULL QUOTE -->
-  <section>
-    <div class="container pullquote reveal-up">
-      <span class="pq-mark">&ldquo;</span>
-      <blockquote>The only way to do great work is to love what you do.</blockquote>
-      <cite>Steve Jobs</cite>
-      <p class="pq-note">We are a team of passionate specialists — each of us doing the one thing we care most about, on the same brief.</p>
+    <div class="container band-grid">
+      <div class="band-copy">
+        <span class="eyebrow">Nepal &rarr; the world</span>
+        <h2 class="reveal-up" id="band-title">Built in Nepal. <em>Accessible globally.</em></h2>
+        <p class="reveal-up">An expert team in Kathmandu, working in your time zone. Briefs, reviews and reporting run live across four continents.</p>
+        <ul class="band-cities reveal-up">
+          <li>Dubai</li><li>Singapore</li><li>London</li><li>Sydney</li><li>New York</li>
+        </ul>
+      </div>
+      <figure class="world" aria-label="Map showing Kathmandu connected to Dubai, Singapore, London, Sydney and New York">
+        <canvas class="world-canvas" width="720" height="400"></canvas>
+      </figure>
     </div>
   </section>
 
@@ -694,7 +730,7 @@
       <div class="cta-row">
         <h2 class="reveal-up">Have something worth building?</h2>
         <div class="reveal-up">
-          <p class="text-soft">Tell us what you want to grow. We&rsquo;ll tell you how we&rsquo;d approach it.</p>
+          <p class="text-soft">Share the goal and the numbers. Within one business day you get a clear first plan, not a brochure.</p>
           <a class="btn btn-primary btn-magnetic" href="contact.html">Start a project <span class="btn-arrow" aria-hidden="true">&rarr;</span></a>
         </div>
       </div>
@@ -708,7 +744,7 @@
     <div class="footer-top">
       <div class="footer-brand">
         <img src="assets/logo-horizontal-dark.png" alt="Cognimorph" width="114" height="28" loading="lazy">
-        <p>Your digital partner for the AI age. Built by an expert team in Nepal, accessible globally — serving brands in Dubai, Singapore, the UK, Australia and the USA.</p>
+        <p>Your digital partner for the AI age. Built by an expert team in Nepal, accessible globally.</p>
         <p><a class="footer-link" href="mailto:hello@cognimorph.co">hello@cognimorph.co</a></p>
       </div>
       <div>

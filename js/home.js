@@ -10,7 +10,9 @@
 
     initMark(C);
     initManifesto(C);
-    initServiceStack(C);
+    initServices(C);
+    initWorld(C);
+    initOrbit(C);
     initKinetic(C);
     initTypewriter(C);
     initMarquee(C);
@@ -20,26 +22,66 @@
   }
 
   // ---- C + M monogram controller ------------------------------------------------
-  // Drives the outer layer groups only; the load sequence and light sweep are CSS
-  // on the inner paths, so the two never fight over the same transform.
+  // The C and the two peaks are joined by thin network threads. Pointer, hover, tap and
+  // scroll pull the layers apart; a damped spring brings them back together, so the
+  // mark always resolves into one integrated form. Load and sweep animations are CSS on
+  // the inner paths, so they never fight this controller over the same transform.
   function initMark(C){
     var vis = document.getElementById('hero-visual');
     if(!vis) return;
     var svg = vis.querySelector('.cm-mark');
     var hero = vis.closest('.hero');
-    var layerC = vis.querySelector('[data-layer="c"]');
-    var layerP1 = vis.querySelector('[data-layer="p1"]');
-    var layerP2 = vis.querySelector('[data-layer="p2"]');
+    var L = {
+      c: vis.querySelector('[data-layer="c"]'),
+      p1: vis.querySelector('[data-layer="p1"]'),
+      p2: vis.querySelector('[data-layer="p2"]')
+    };
+    var lines = Array.prototype.slice.call(vis.querySelectorAll('.cm-threads line'));
+    var dots = Array.prototype.slice.call(vis.querySelectorAll('.cm-threads circle'));
 
-    // Pause the idle sweep while the hero is off-screen
     C.observe([vis], function(el, inView){ el.classList.toggle('is-paused', !inView); }, { once: false });
-    if(C.reducedMotion || !layerC) return;
 
-    var tx = 0, ty = 0, cx = 0, cy = 0;   // pointer target / current (-0.5 .. 0.5)
-    var th = 0, ch = 0;                   // hover target / current (0 .. 1)
-    var sp = 0, csp = 0;                  // scroll progress target / current (0 .. 1)
-    var pulse = 0;                        // tap: part & reconnect (decays to 0)
-    var running = false, heroVisible = true, lastSweep = 0;
+    // anchor points in untransformed SVG units, each tied to a layer
+    var C_CENTER = [187, 210];
+    var NODES = [
+      { layer: 'c',  p: [306, 88] },   // top of the C
+      { layer: 'c',  p: [306, 332] },  // foot of the C
+      { layer: 'p1', p: [351, 156] },  // first peak
+      { layer: 'p2', p: [440, 150] },  // second peak
+      { layer: 'p2', p: [409, 340] }   // base of the second peak
+    ];
+    var THREADS = [[0, 2], [2, 3], [1, 4], [0, 3]];
+
+    var state = { c: [0, 0, 0], p1: [0, 0, 0], p2: [0, 0, 0] };
+    function place(){
+      function tf(name){ var v = state[name]; return 'translate(' + v[0].toFixed(2) + 'px,' + v[1].toFixed(2) + 'px) rotate(' + v[2].toFixed(2) + 'deg)'; }
+      L.c.style.transform = tf('c'); L.p1.style.transform = tf('p1'); L.p2.style.transform = tf('p2');
+      var pts = NODES.map(function(n){
+        var v = state[n.layer], x = n.p[0], y = n.p[1];
+        if(v[2]){
+          var a = v[2] * Math.PI / 180, dx = x - C_CENTER[0], dy = y - C_CENTER[1];
+          x = C_CENTER[0] + dx * Math.cos(a) - dy * Math.sin(a);
+          y = C_CENTER[1] + dx * Math.sin(a) + dy * Math.cos(a);
+        }
+        return [x + v[0], y + v[1]];
+      });
+      lines.forEach(function(l){
+        var t = THREADS[+l.getAttribute('data-t')];
+        l.setAttribute('x1', pts[t[0]][0].toFixed(1)); l.setAttribute('y1', pts[t[0]][1].toFixed(1));
+        l.setAttribute('x2', pts[t[1]][0].toFixed(1)); l.setAttribute('y2', pts[t[1]][1].toFixed(1));
+      });
+      dots.forEach(function(d){
+        var p = pts[+d.getAttribute('data-n')];
+        d.setAttribute('cx', p[0].toFixed(1)); d.setAttribute('cy', p[1].toFixed(1));
+      });
+    }
+    place();
+    if(C.reducedMotion || !L.c) return;
+
+    var tx = 0, ty = 0, cx = 0, cy = 0;        // pointer target / current
+    var sep = 0, sepV = 0, sepT = 0;           // separation (spring): hover / tap
+    var sp = 0, csp = 0;                       // scroll progress
+    var running = false, heroVisible = true, lastSweep = 0, tapTimer = null;
 
     function sweep(){
       var now = Date.now();
@@ -51,34 +93,31 @@
       setTimeout(function(){ svg.classList.remove('sweep-now'); }, 1550);
     }
 
-    function set(el, x, y, r){
-      el.style.transform = 'translate(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px) rotate(' + r.toFixed(2) + 'deg)';
-    }
-
     function frame(){
-      cx += (tx - cx) * 0.075;
-      cy += (ty - cy) * 0.075;
-      ch += (th - ch) * 0.08;
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      // critically-damped-ish spring: parts smoothly, returns with the faintest settle
+      sepV += (sepT - sep) * 0.075;
+      sepV *= 0.8;
+      sep += sepV;
       csp += (sp - csp) * 0.14;
-      pulse *= 0.93;
-      if(pulse < 0.002) pulse = 0;
 
-      // C: drifts gently and opens (rotates back) with hover and scroll
-      set(layerC, cx * 14 - pulse * 14 - csp * 8, cy * 10 + csp * 6, cx * 4 - ch * 5 - csp * 16 - pulse * 9);
-      // Peaks: deeper layers travel further, lift on hover, climb away on scroll
-      set(layerP1, cx * 22 + pulse * 8 + csp * 6, cy * 14 - ch * 6 - pulse * 10 - csp * 22, 0);
-      set(layerP2, cx * 32 + pulse * 16 + csp * 14, cy * 20 - ch * 10 - pulse * 16 - csp * 36, 0);
-      vis.style.transform = 'translate3d(0,' + (csp * 60).toFixed(1) + 'px,0)';
-      vis.style.opacity = (1 - csp * 0.55).toFixed(3);
+      var k = sep, s2 = csp;
+      state.c  = [cx * 10 - k * 22 - s2 * 8,  cy * 8 + k * 4 + s2 * 6,  cx * 3 - k * 9 - s2 * 14];
+      state.p1 = [cx * 16 + k * 10 + s2 * 6,  cy * 12 - k * 14 - s2 * 22, 0];
+      state.p2 = [cx * 24 + k * 28 + s2 * 14, cy * 16 - k * 22 - s2 * 34, 0];
+      place();
+      vis.style.setProperty('--sep', Math.max(0, k).toFixed(3));
+      vis.style.transform = 'translate3d(0,' + (s2 * 60).toFixed(1) + 'px,0)';
+      vis.style.opacity = (1 - s2 * 0.55).toFixed(3);
 
       var settled = Math.abs(tx - cx) < 0.0008 && Math.abs(ty - cy) < 0.0008 &&
-                    Math.abs(th - ch) < 0.002 && Math.abs(sp - csp) < 0.001 && pulse === 0;
+                    Math.abs(sepT - sep) < 0.001 && Math.abs(sepV) < 0.001 && Math.abs(sp - csp) < 0.001;
       if(settled){ running = false; return; }
       requestAnimationFrame(frame);
     }
     function kick(){ if(!running){ running = true; requestAnimationFrame(frame); } }
 
-    // Pointer: layers separate in depth as the cursor moves across the hero
     if(C.finePointer && hero){
       hero.addEventListener('pointermove', function(e){
         var r = hero.getBoundingClientRect();
@@ -87,21 +126,17 @@
         kick();
       });
       hero.addEventListener('pointerleave', function(){ tx = 0; ty = 0; kick(); });
-      vis.addEventListener('pointerenter', function(){ th = 1; vis.classList.add('is-hover'); sweep(); kick(); });
-      vis.addEventListener('pointerleave', function(){ th = 0; vis.classList.remove('is-hover'); kick(); });
+      vis.addEventListener('pointerenter', function(){ sepT = 1; vis.classList.add('is-hover'); sweep(); kick(); });
+      vis.addEventListener('pointerleave', function(){ sepT = 0; vis.classList.remove('is-hover'); kick(); });
     }
-
-    // Touch: a tap parts the layers and they settle back together
+    // Touch: a tap parts the layers, then the threads pull them back together
     vis.addEventListener('pointerup', function(e){
       if(e.pointerType === 'mouse') return;
-      pulse = 1;
-      sweep();
-      kick();
+      sepT = 1; sweep(); kick();
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(function(){ sepT = 0; kick(); }, 700);
     });
 
-    // Scroll: the C opens and the peaks climb as the mark itself leaves the viewport
-    // (measured from the mark's own position, so it also reads right on phones where
-    // the mark sits below the copy). Offsets are cached — no layout reads per frame.
     if(hero){
       C.observe([hero], function(el, inView){ heroVisible = inView; }, { once: false });
       var markTop = 0, markH = 1;
@@ -118,8 +153,7 @@
       window.addEventListener('load', measure);
       C.onScrollFrame(function(y){
         if(!heroVisible && sp === 1) return;
-        var start = markTop - 120;              // begins once the mark nears the header
-        var p = Math.max(0, Math.min(1, (y - start) / (markH * 1.1)));
+        var p = Math.max(0, Math.min(1, (y - (markTop - 120)) / (markH * 1.1)));
         if(p !== sp){ sp = p; kick(); }
       });
     }
@@ -164,30 +198,233 @@
     });
   }
 
-  // ---- Service cards pin and stack; covered cards recede slightly -----------------
-  function initServiceStack(C){
-    var stack = document.querySelector('.svc-stack');
-    if(!stack || C.reducedMotion) return;
-    var cards = Array.prototype.slice.call(stack.querySelectorAll('.svc'));
-    cards.forEach(function(c, i){ c.style.setProperty('--si', i); });
-    var mq = window.matchMedia('(min-width: 1000px) and (min-height: 720px)');
-    var visible = false;
-    C.observe([stack], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
-    C.onScrollFrame(function(){
-      if(!visible) return;
-      if(!mq.matches){
-        cards.forEach(function(c){ if(c.style.transform){ c.style.transform = ''; c.style.removeProperty('--dim'); } });
-        return;
+  // ---- Services showcase: hover, click, arrow keys, or gentle auto-advance ----------
+  function initServices(C){
+    var show = document.querySelector('.svc-show');
+    if(!show) return;
+    var items = Array.prototype.slice.call(show.querySelectorAll('.svc-item'));
+    var tabs = items.map(function(it){ return it.querySelector('.svc-tab'); });
+    var panels = Array.prototype.slice.call(show.querySelectorAll('.svc-panel'));
+    var current = 0, hoverTimer = null, lastX = -1, lastY = -1;
+
+    function select(i, focus){
+      if(i === current){ return; }
+      current = i;
+      items.forEach(function(it, k){
+        var on = k === i;
+        it.classList.toggle('is-active', on);
+        tabs[k].setAttribute('aria-expanded', String(on));
+        panels[k].classList.toggle('is-active', on);
+      });
+      // replay the panel's draw-on animation
+      var p = panels[i];
+      p.classList.remove('is-visible');
+      void p.offsetWidth;
+      p.classList.add('is-visible');
+      if(focus) tabs[i].focus();
+    }
+
+    // Keep the list a constant height (tallest expanded state) so rows below never jump
+    var list = show.querySelector('.svc-list');
+    function lockHeight(){
+      list.style.minHeight = '';
+      var base = list.getBoundingClientRect().height;
+      var open = items[current].querySelector('.svc-detail-inner').scrollHeight;
+      var tallest = Math.max.apply(null, items.map(function(it){ return it.querySelector('.svc-detail-inner').scrollHeight; }));
+      list.style.minHeight = Math.ceil(base - open + tallest) + 'px';
+    }
+    lockHeight();
+    window.addEventListener('resize', lockHeight);
+    window.addEventListener('load', lockHeight);
+
+    tabs.forEach(function(t, i){
+      t.addEventListener('click', function(){ select(i); });
+      if(C.finePointer){
+        // Only real pointer movement selects: rows shift as panels expand, and a shift
+        // under a resting cursor must not switch the service on its own.
+        t.addEventListener('pointermove', function(e){
+          var moved = e.clientX !== lastX || e.clientY !== lastY;
+          lastX = e.clientX; lastY = e.clientY;
+          if(i === current || !moved) return;
+          clearTimeout(hoverTimer);
+          hoverTimer = setTimeout(function(){ select(i); }, 110);
+        });
+        t.addEventListener('pointerleave', function(){ clearTimeout(hoverTimer); });
       }
-      for(var i = 0; i < cards.length - 1; i++){
-        var cur = cards[i].getBoundingClientRect();
-        var next = cards[i + 1].getBoundingClientRect();
-        // how far the next card has slid over this one (0 .. 1)
-        var p = Math.max(0, Math.min(1, 1 - (next.top - cur.top) / cur.height));
-        cards[i].style.transform = 'scale(' + (1 - p * 0.05).toFixed(4) + ')';
-        cards[i].style.setProperty('--dim', (p * 0.28).toFixed(3));
-      }
+      t.addEventListener('keydown', function(e){
+        var n = null;
+        if(e.key === 'ArrowDown' || e.key === 'ArrowRight') n = (i + 1) % tabs.length;
+        if(e.key === 'ArrowUp' || e.key === 'ArrowLeft') n = (i - 1 + tabs.length) % tabs.length;
+        if(e.key === 'Home') n = 0;
+        if(e.key === 'End') n = tabs.length - 1;
+        if(n !== null){ e.preventDefault(); select(n, true); }
+      });
     });
+
+    if(C.reducedMotion) return;
+    // Auto-advance while visible; the progress line pauses while the pointer or focus is inside
+    // Held while the pointer is over the showcase or keyboard focus is inside it. Checked
+    // directly (not via enter/leave) because rows resize under a resting cursor.
+    function syncHold(){
+      var held = show.matches(':hover') || !!show.querySelector(':focus-visible');
+      show.classList.toggle('is-held', held);
+    }
+    show.addEventListener('pointermove', syncHold);
+    show.addEventListener('focusin', syncHold);
+    show.addEventListener('focusout', function(){ setTimeout(syncHold, 0); });
+    setInterval(function(){ if(show.classList.contains('is-auto')) syncHold(); }, 400);
+    show.addEventListener('animationend', function(e){
+      if(e.animationName === 'svcTimer') select((current + 1) % items.length);
+    });
+    C.observe([show], function(el, inView){ el.classList.toggle('is-auto', inView); }, { once: false, rootMargin: '-15% 0px -15% 0px' });
+  }
+
+  // ---- Integration diagram: pause its loops off-screen ------------------------------
+  function initOrbit(C){
+    var orbit = document.querySelector('.orbit');
+    if(!orbit) return;
+    C.observe([orbit], function(el, inView){ el.classList.toggle('is-paused', !inView); }, { once: false });
+    var nodes = Array.prototype.slice.call(orbit.querySelectorAll('.o-node'));
+    if(C.reducedMotion || !nodes.length) return;
+    var k = 0;
+    setInterval(function(){
+      if(orbit.classList.contains('is-paused') || document.hidden) return;
+      nodes.forEach(function(n, i){ n.classList.toggle('is-lit', i === k); });
+      k = (k + 1) % nodes.length;
+    }, 1600);
+  }
+
+  // ---- World network: Kathmandu exchanging data with the client regions --------------
+  var WORLD = {"step":2.6,"lat0":75,"cols":138,"rows":50,"rle":"m,3,5,4,3,2,9,d,t,1,9,e,9,1,e,1,8,1,e,5,3,2,1,7,7,a,1,1,n,1h,2,22,9,5,1,1,4,1,1a,1y,4,1,4,2,1o,r,2,1,5,2,6,3,j,5,1,1o,6,6,1,k,6,3,a,1,i,5,1,1g,3,3,c,1,8,g,5,6,m,1,6,2,3,18,7,2,o,i,3,7,l,2,3,3,2,19,7,2,r,i,1,9,i,3,2,1h,5,1,s,q,1,1,m,1h,1,1,y,l,1,1,2,3,j,1j,11,l,1,2,n,c,1,5,2,x,11,l,o,4,3,2,1,4,5,3,1,v,3,1,10,j,p,3,3,1,2,1,1,1,1,9,2,p,1,2,5,1,10,i,q,3,5,1,2,1,2,9,1,q,2,1,3,1,12,h,r,6,a,w,5,3,13,e,s,9,2,1,5,x,3,1,18,7,1,1,2,1,r,n,1,r,1b,1,1,5,w,i,1,5,2,p,1d,1,1,4,v,k,1,5,1,1,4,k,1g,3,7,1,n,k,1,8,4,7,2,7,1j,3,2,2,5,2,k,l,1,6,6,5,3,5,1,1,1l,4,s,l,2,4,7,4,6,4,1p,3,q,m,1,2,a,2,7,4,5,1,1l,1,4,2,k,n,2,1,9,2,7,1,1,2,5,2,1l,2,1,6,i,p,i,1,9,1,1n,8,i,5,1,h,k,1,8,1,1n,b,n,e,l,1,4,1,1r,b,n,d,l,2,2,4,3,1,1l,e,l,c,n,1,3,2,1,1,4,1,1j,h,j,a,p,1,5,1,5,4,1f,i,i,a,q,2,b,3,3,1,1b,h,i,b,15,1,1f,f,j,b,z,2,1k,e,k,b,3,1,s,4,3,1,1j,c,k,a,2,2,s,9,1j,c,k,9,3,2,r,b,1i,b,m,8,3,2,p,e,1h,9,o,7,4,1,q,f,1g,9,o,7,v,f,1g,8,q,5,w,f,1g,7,r,4,y,3,4,7,1f,6,23,5,1g,6,24,3,a,2,15,4,3q,3,29,1,9,1,16,3,2i,2,17,4,3q,3,3t,1,2n"};
+  function initWorld(C){
+    var canvas = document.querySelector('.world-canvas');
+    if(!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.band-cities li'));
+    // unpack the run-length encoded land mask
+    var bits = [], v = 0;
+    WORLD.rle.split(',').forEach(function(n){ n = parseInt(n, 36); for(var i = 0; i < n; i++) bits.push(v); v = 1 - v; });
+    var VIEW = { lon0: -98, lon1: 178, lat0: 68, lat1: -46 };
+    var HUB = { name: 'Kathmandu', lat: 27.7, lon: 85.3 };
+    var CITIES = [
+      { name: 'Dubai', lat: 25.2, lon: 55.3 },
+      { name: 'Singapore', lat: 1.35, lon: 103.8 },
+      { name: 'London', lat: 51.5, lon: -0.13 },
+      { name: 'Sydney', lat: -33.9, lon: 151.2 },
+      { name: 'New York', lat: 40.7, lon: -74 }
+    ];
+    var W = 0, H = 0, dpr = 1, base = null, arcs = [], packets = [], rings = [], visible = false, running = false, last = 0;
+
+    function proj(lat, lon){
+      return [ (lon - VIEW.lon0) / (VIEW.lon1 - VIEW.lon0) * W, (VIEW.lat0 - lat) / (VIEW.lat0 - VIEW.lat1) * H ];
+    }
+    function layout(){
+      var r = canvas.getBoundingClientRect();
+      if(!r.width) return;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = r.width; H = r.height;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      // pre-render the dotted map once per size
+      base = document.createElement('canvas');
+      base.width = canvas.width; base.height = canvas.height;
+      var b = base.getContext('2d');
+      b.scale(dpr, dpr);
+      var hub = proj(HUB.lat, HUB.lon);
+      var dot = Math.max(1, W / 460);
+      for(var row = 0; row < WORLD.rows; row++){
+        for(var col = 0; col < WORLD.cols; col++){
+          if(!bits[row * WORLD.cols + col]) continue;
+          var lon = -180 + col * WORLD.step + WORLD.step / 2, lat = WORLD.lat0 - row * WORLD.step - WORLD.step / 2;
+          if(lon < VIEW.lon0 || lon > VIEW.lon1 || lat > VIEW.lat0 || lat < VIEW.lat1) continue;
+          var p = proj(lat, lon);
+          var d = Math.hypot(p[0] - hub[0], p[1] - hub[1]) / W;
+          b.fillStyle = 'rgba(244,239,228,' + (0.1 + Math.max(0, 0.32 - d * 0.9)).toFixed(3) + ')';
+          b.beginPath(); b.arc(p[0], p[1], dot, 0, 6.2832); b.fill();
+        }
+      }
+      arcs = CITIES.map(function(c){
+        var a = proj(HUB.lat, HUB.lon), z = proj(c.lat, c.lon);
+        var mx = (a[0] + z[0]) / 2, my = (a[1] + z[1]) / 2;
+        var dx = z[0] - a[0], dy = z[1] - a[1], len = Math.hypot(dx, dy);
+        var lift = Math.min(len * 0.35, H * 0.32);
+        return { city: c, a: a, z: z, c: [mx + dy / len * lift * (dx < 0 ? 1 : -1) * 0.25, my - lift] };
+      });
+    }
+    function pt(arc, t){
+      var u = 1 - t;
+      return [u * u * arc.a[0] + 2 * u * t * arc.c[0] + t * t * arc.z[0], u * u * arc.a[1] + 2 * u * t * arc.c[1] + t * t * arc.z[1]];
+    }
+    function spawn(){
+      var i = Math.floor(Math.random() * arcs.length);
+      packets.push({ arc: arcs[i], i: i, t: 0, out: Math.random() < 0.6, speed: 0.0035 + Math.random() * 0.003 });
+    }
+    function draw(now){
+      var dt = last ? Math.min(50, now - last) / 16.7 : 1; last = now;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if(base) ctx.drawImage(base, 0, 0);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // arcs
+      arcs.forEach(function(arc){
+        ctx.strokeStyle = 'rgba(124,182,220,.28)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(arc.a[0], arc.a[1]); ctx.quadraticCurveTo(arc.c[0], arc.c[1], arc.z[0], arc.z[1]); ctx.stroke();
+      });
+      // packets with short glowing trails
+      for(var k = packets.length - 1; k >= 0; k--){
+        var pk = packets[k];
+        pk.t += pk.speed * dt;
+        if(pk.t >= 1){
+          rings.push({ p: pk.out ? pk.arc.z : pk.arc.a, r: 0 });
+          if(pk.out && chips[pk.i]){ var ch = chips[pk.i]; ch.classList.add('is-live'); setTimeout(function(){ ch.classList.remove('is-live'); }, 900); }
+          packets.splice(k, 1); continue;
+        }
+        var tt = pk.out ? pk.t : 1 - pk.t;
+        for(var s = 0; s < 8; s++){
+          var ts = pk.out ? tt - s * 0.012 : tt + s * 0.012;
+          if(ts < 0 || ts > 1) continue;
+          var q = pt(pk.arc, ts);
+          ctx.fillStyle = 'rgba(233,106,36,' + (0.9 - s * 0.11).toFixed(2) + ')';
+          ctx.beginPath(); ctx.arc(q[0], q[1], Math.max(0.6, 2.4 - s * 0.22), 0, 6.2832); ctx.fill();
+        }
+      }
+      if(packets.length < 7 && Math.random() < 0.06 * dt) spawn();
+      // arrival rings
+      for(var r = rings.length - 1; r >= 0; r--){
+        var rg = rings[r]; rg.r += 0.5 * dt;
+        var a = 1 - rg.r / 18;
+        if(a <= 0){ rings.splice(r, 1); continue; }
+        ctx.strokeStyle = 'rgba(233,106,36,' + a.toFixed(2) + ')'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(rg.p[0], rg.p[1], 3 + rg.r, 0, 6.2832); ctx.stroke();
+      }
+      // cities and hub
+      ctx.font = '500 ' + Math.max(10, Math.round(W / 62)) + 'px Inter, sans-serif';
+      arcs.forEach(function(arc){
+        ctx.fillStyle = '#F4EFE4'; ctx.beginPath(); ctx.arc(arc.z[0], arc.z[1], 3, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = 'rgba(244,239,228,.75)';
+        var right = arc.z[0] > W * 0.82;
+        ctx.textAlign = right ? 'right' : 'left';
+        ctx.fillText(arc.city.name, arc.z[0] + (right ? -7 : 7), arc.z[1] + (right ? 16 : 4));
+        ctx.textAlign = 'left';
+      });
+      var h = arcs.length ? arcs[0].a : proj(HUB.lat, HUB.lon);
+      var pulse = (now / 1600) % 1;
+      ctx.strokeStyle = 'rgba(233,106,36,' + (0.6 * (1 - pulse)).toFixed(2) + ')'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(h[0], h[1], 5 + pulse * 16, 0, 6.2832); ctx.stroke();
+      ctx.fillStyle = '#E96A24'; ctx.beginPath(); ctx.arc(h[0], h[1], 5, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = '#F4EFE4'; ctx.font = '600 ' + Math.max(11, Math.round(W / 55)) + 'px Inter, sans-serif';
+      ctx.fillText('Kathmandu', h[0] + 9, h[1] - 8);
+      if(visible && !C.reducedMotion){ requestAnimationFrame(draw); } else { running = false; }
+    }
+    function start(){ if(!running){ running = true; last = 0; requestAnimationFrame(draw); } }
+    layout();
+    window.addEventListener('resize', function(){ layout(); if(!running) requestAnimationFrame(draw); });
+    if(C.reducedMotion){
+      // static frame: a few packets frozen mid-flight
+      arcs.forEach(function(a, i){ packets.push({ arc: a, i: i, t: 0.55, out: true, speed: 0 }); });
+      requestAnimationFrame(draw);
+      return;
+    }
+    C.observe([canvas], function(_, inView){ visible = inView; if(inView){ layout(); start(); } }, { once: false, rootMargin: '100px 0px 100px 0px' });
   }
 
   // ---- Kinetic capabilities marquee: drifts, and speeds up / reverses with scroll ---

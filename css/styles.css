@@ -596,10 +596,14 @@ html[data-theme="dark"] .theme-toggle .icon-sun{ display: block; }
   fill: none; stroke: var(--accent); stroke-width: 34;
   stroke-linejoin: miter; stroke-miterlimit: 12; stroke-linecap: butt;
 }
-.cm-layer, .cm-mark .cm-c, .cm-mark .peak{
+.cm-mark .cm-c, .cm-mark .peak{
   transform-box: fill-box;
   transform-origin: 50% 50%;
 }
+/* layer groups rotate about the C's true centre (the masked sheen would skew fill-box) */
+.cm-layer{ transform-box: view-box; transform-origin: 187px 210px; }
+/* threads brighten as the layers part */
+.hero-visual .cm-threads line:not(.flow){ opacity: calc(.4 + var(--sep, 0) * .5); }
 .cm-mark .peak{ transform-origin: 50% 100%; }
 .cm-sheen{ fill: url(#cm-sheen-grad); transform: translateX(-60px); opacity: 0; }
 
@@ -786,60 +790,35 @@ html[data-theme="dark"] .theme-toggle .icon-sun{ display: block; }
 .js .reveal-media.is-visible{ clip-path: inset(-12% -12% -18% -12%); }
 .js .reveal-media.is-visible img, .js .reveal-media.is-visible .panel-bg{ scale: 1; }
 
-/* ---- Full-bleed band (home) ---- */
+/* ---- Band: Nepal connected to the world (home) ---- */
 .band{
   position: relative;
   overflow: hidden;
-  padding: 0;
-  background: var(--c-navy);
-  color: var(--on-dark);
   isolation: isolate;
+  padding: clamp(5rem, 10vw, 8rem) 0;
+  color: var(--on-dark);
+  background:
+    radial-gradient(60% 80% at 78% 40%, rgba(21,94,145,.55), transparent 70%),
+    linear-gradient(120deg, #08141E 0%, #102A3A 55%, #123a55 100%);
 }
-.band-media{ position: absolute; inset: 0; z-index: -2; }
-.band-media img{
-  width: 100%; height: 118%;
-  object-fit: cover;
-  object-position: 70% 50%;
-  will-change: transform;
-}
-.band::after{
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(90deg, rgba(8,20,30,.9) 0%, rgba(8,20,30,.55) 45%, rgba(8,20,30,0) 80%);
-}
-.band-copy{
-  padding-top: clamp(6rem, 14vw, 11rem);
-  padding-bottom: clamp(6rem, 14vw, 11rem);
-}
+.band-grid{ display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(2rem, 4vw, 4rem); align-items: center; }
+@media (max-width: 900px){ .band-grid{ grid-template-columns: 1fr; } }
 .band h2{ color: #F7F3EA; max-width: 15ch; }
 .band h2 em{ font-style: normal; color: #7CB6DC; }
-.band p{ color: rgba(244,239,228,.78); max-width: 44ch; margin-top: 1.4rem; font-size: 1.08rem; }
-@media (max-width: 700px){
-  .band::after{ background: linear-gradient(180deg, rgba(8,20,30,.75), rgba(8,20,30,.88)); }
+.band p{ color: rgba(244,239,228,.78); max-width: 40ch; margin-top: 1.4rem; font-size: 1.05rem; }
+.band-cities{ display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.8rem; }
+.band-cities li{
+  font-size: .8rem; letter-spacing: .04em; padding: .4em .85em;
+  border: 1px solid rgba(244,239,228,.22); border-radius: var(--radius-pill); color: rgba(244,239,228,.85);
+  transition: border-color .3s ease, background-color .3s ease, color .3s ease;
 }
+.band-cities li.is-live{ border-color: rgba(233,106,36,.8); background: rgba(233,106,36,.12); color: #fff; }
+.world{ margin: 0; position: relative; aspect-ratio: 9/5; width: 100%; }
+.world-canvas{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* ==========================================================================
    Home — service rows with animated panels
    ========================================================================== */
-.svc{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(2rem, 5vw, 4.5rem);
-  align-items: center;
-  padding: clamp(3rem, 6vw, 5rem) 0;
-  border-top: 1px solid var(--border);
-}
-.svc:first-of-type{ margin-top: 2.6rem; }
-.svc:nth-child(even) .svc-media{ order: -1; }
-@media (max-width: 860px){
-  .svc{ grid-template-columns: 1fr; gap: 1.8rem; }
-  .svc:nth-child(even) .svc-media{ order: 0; }
-}
-.svc h3{ font-size: clamp(1.6rem, 2.6vw, 2.2rem); margin-bottom: 0.9rem; }
-.svc-kicker{
-  font-size: .8rem; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 1rem; font-weight: 500;
-}
-.svc p{ color: var(--text-soft); }
 .tags{ display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
 .tags span{
   font-size: 0.84rem;
@@ -849,7 +828,6 @@ html[data-theme="dark"] .theme-toggle .icon-sun{ display: block; }
   color: var(--text-soft);
   transition: border-color .3s ease, color .3s ease;
 }
-.svc:hover .tags span{ border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong)); }
 
 .platform-row{ display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.5rem; }
 .plat{
@@ -871,7 +849,6 @@ html[data-theme="dark"] .plat .dot[style*="#111"]{ background: #F5F1E8 !importan
   box-shadow: var(--shadow-md);
   transition: box-shadow .6s var(--ease-out), transform .6s var(--ease-out);
 }
-.svc:hover .anim-panel{ box-shadow: var(--shadow-lg); transform: translateY(-4px); }
 .anim-panel::after{
   content: ""; position: absolute; inset: 0; border-radius: inherit;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
@@ -930,10 +907,12 @@ html[data-theme="dark"] .plat .dot[style*="#111"]{ background: #F5F1E8 !importan
    Home — manifesto: words light up as the reader scrolls through
    ========================================================================== */
 .manifesto{ padding: clamp(5rem, 11vw, 9rem) 0 clamp(3rem, 7vw, 5rem); }
+.manifesto-grid{ display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+@media (max-width: 900px){ .manifesto-grid{ grid-template-columns: 1fr; } }
 .manifesto-text{
-  max-width: 24ch;
+  max-width: 22ch;
   font-family: var(--font-display);
-  font-size: clamp(1.9rem, 4.4vw, 3.9rem);
+  font-size: clamp(1.8rem, 3.6vw, 3.3rem);
   line-height: 1.12;
   letter-spacing: -.02em;
   color: var(--text);
@@ -941,34 +920,9 @@ html[data-theme="dark"] .plat .dot[style*="#111"]{ background: #F5F1E8 !importan
   text-wrap: pretty;
 }
 .manifesto-text em{ font-style: normal; color: var(--accent); }
-.js .manifesto-text .mw{ opacity: .16; transition: opacity .45s ease; }
+.js .manifesto-text .mw{ opacity: .56; transition: opacity .45s ease; }
+.js .manifesto-text em .mw{ opacity: .74; }
 .js .manifesto-text .mw.on{ opacity: 1; }
-@media (min-width: 1100px){ .manifesto-text{ max-width: 22ch; } }
-
-/* ==========================================================================
-   Home — stacking service cards (pin and layer on scroll, large screens)
-   ========================================================================== */
-@media (min-width: 1000px) and (min-height: 720px){
-  .svc-stack{ margin-top: 2.6rem; padding-bottom: 2rem; }
-  .svc-stack .svc{
-    position: sticky;
-    top: calc(var(--header-h) + 22px + var(--si, 0) * 14px);
-    margin: 0 0 6vh;
-    padding: clamp(2rem, 3.4vw, 3rem);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    box-shadow: var(--shadow-md);
-    transform-origin: 50% 0;
-    will-change: transform;
-  }
-  .svc-stack .svc:first-of-type{ margin-top: 0; }
-  .svc-stack .svc::after{
-    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-    background: var(--c-navy); opacity: var(--dim, 0);
-  }
-  .svc-stack .svc:last-child{ margin-bottom: 0; }
-}
 
 /* ==========================================================================
    Home — kinetic capabilities marquee (JS drives speed from scroll velocity)
@@ -995,6 +949,96 @@ html:not(.js) .kinetic-track{ animation: slide 40s linear infinite; }
 
 /* ---- Magnetic CTAs ---- */
 .btn-magnetic{ transition: transform .5s var(--ease-out), background-color .25s ease, box-shadow .4s var(--ease-out); }
+
+/* ==========================================================================
+   Home — services showcase (hover / click / keys / auto-advance)
+   ========================================================================== */
+.section-intro{ display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem 3rem; flex-wrap: wrap; }
+.section-intro .lede{ max-width: 38ch; margin: 0; }
+.svc-show{
+  display: grid; grid-template-columns: .95fr 1.05fr; gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start; margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+.svc-list{ border-top: 1px solid var(--border-strong); }
+.svc-item{ position: relative; border-bottom: 1px solid var(--border); }
+.svc-head{ margin: 0; font: inherit; }
+.svc-tab{
+  width: 100%; display: flex; align-items: baseline; gap: 1.1rem;
+  padding: 1.35rem 0; background: none; border: 0; text-align: left; color: var(--text-soft);
+  font-family: var(--font-display); font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.2;
+  transition: color .3s ease, padding-left .5s var(--ease-out);
+}
+.svc-num{ font-family: var(--font-body); font-size: .78rem; letter-spacing: .08em; color: var(--text-faint); min-width: 1.8rem; }
+.svc-name{ flex: 1; }
+.svc-plus{ position: relative; width: 14px; height: 14px; flex-shrink: 0; align-self: center; }
+.svc-plus::before, .svc-plus::after{ content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1.5px; background: currentColor; transition: transform .45s var(--ease-out); }
+.svc-plus::after{ transform: rotate(90deg); }
+.svc-item.is-active .svc-plus::after{ transform: rotate(0deg); }
+.svc-tab:hover, .svc-item.is-active .svc-tab{ color: var(--text); }
+.svc-tab:hover{ padding-left: .5rem; }
+.svc-item.is-active .svc-num{ color: var(--cta); }
+.svc-detail{ display: grid; grid-template-rows: 0fr; transition: grid-template-rows .6s var(--ease-out); }
+.svc-item.is-active .svc-detail{ grid-template-rows: 1fr; }
+.svc-detail-inner{ overflow: hidden; min-height: 0; }
+.svc-detail-inner > *:first-child{ margin-top: 0; }
+.svc-title{ font-family: var(--font-display); font-size: clamp(1.4rem, 2.2vw, 1.9rem); line-height: 1.18; color: var(--text); margin: 0 0 .7rem; max-width: 26ch; }
+.svc-title em{ font-style: normal; }
+.svc-copy{ color: var(--text-soft); margin: 0; }
+.svc-detail .tags{ margin-top: 1.1rem; }
+.svc-link{ display: inline-flex; align-items: center; gap: .45rem; margin: 1.2rem 0 1.6rem; font-weight: 600; font-size: .95rem; color: var(--accent); }
+.svc-link:hover .btn-arrow{ transform: translateX(4px); }
+.svc-timer{ position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: var(--cta); transform: scaleX(0); transform-origin: left; }
+.svc-show.is-auto .svc-item.is-active .svc-timer{ animation: svcTimer var(--svc-dur, 7s) linear forwards; }
+.svc-show.is-held .svc-timer{ animation-play-state: paused !important; }
+@keyframes svcTimer{ to{ transform: scaleX(1); } }
+.svc-stage{ position: sticky; top: calc(var(--header-h) + 2rem); display: grid; }
+.svc-stage .svc-panel{
+  grid-area: 1 / 1;
+  opacity: 0; visibility: hidden;
+  transform: translateY(14px) scale(.985);
+  transition: opacity .55s ease, transform .8s var(--ease-out), visibility 0s linear .55s;
+}
+.svc-stage .svc-panel.is-active{ opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+@media (max-width: 900px){
+  .svc-show{ grid-template-columns: 1fr; }
+  .svc-stage{ position: relative; top: 0; order: -1; }
+}
+
+/* ==========================================================================
+   Home — integration diagram (four disciplines feeding one core)
+   ========================================================================== */
+.orbit{ position: relative; margin: 0; width: 100%; max-width: 440px; justify-self: center; aspect-ratio: 1; }
+.orbit-svg{ width: 100%; height: 100%; overflow: visible; }
+.orbit-ring{ fill: none; stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 2 6; transform-box: fill-box; transform-origin: center; animation: spin 80s linear infinite; }
+.orbit-ring-2{ stroke-dasharray: none; stroke: var(--border); animation: none; }
+.o-link{ fill: none; stroke: var(--border-strong); stroke-width: 1.2; }
+.o-flow{ fill: none; stroke: var(--cta); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 10 140; animation: oFlow 2.4s linear infinite; }
+@keyframes oFlow{ from{ stroke-dashoffset: 150; } to{ stroke-dashoffset: 0; } }
+@keyframes spin{ to{ transform: rotate(360deg); } }
+.orbit-core circle{ fill: var(--surface); stroke: var(--border-strong); }
+.orbit-core .core-c{ fill: none; stroke: var(--cta); stroke-width: 5; stroke-linecap: round; }
+.orbit-core .core-p{ fill: none; stroke: var(--accent); stroke-width: 5.5; stroke-linejoin: miter; }
+.orbit-core{ transform-box: fill-box; transform-origin: center; animation: corePulse 4.8s ease-in-out infinite; }
+@keyframes corePulse{ 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
+.o-node{
+  position: absolute; left: var(--x); top: var(--y); transform: translate(-50%,-50%);
+  padding: .55em 1em; border-radius: var(--radius-pill);
+  background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow-sm);
+  font-size: .85rem; font-weight: 600; color: var(--text); white-space: nowrap;
+  transition: border-color .3s ease, color .3s ease, transform .5s var(--ease-out);
+}
+.o-node:hover, .o-node.is-lit{ border-color: var(--cta); color: var(--cta); transform: translate(-50%,-50%) scale(1.06); }
+.orbit.is-paused *{ animation-play-state: paused !important; }
+
+/* ==========================================================================
+   C + M threads: the layers are joined by live network threads
+   ========================================================================== */
+.cm-threads line{ stroke: color-mix(in srgb, var(--accent) 60%, var(--cta)); stroke-width: 1.4; stroke-linecap: round; opacity: .55; }
+.cm-threads line.flow{ stroke: var(--cta); stroke-width: 2.2; stroke-dasharray: 6 60; opacity: .9; animation: threadFlow 2.2s linear infinite; }
+@keyframes threadFlow{ from{ stroke-dashoffset: 66; } to{ stroke-dashoffset: 0; } }
+.cm-threads circle{ fill: var(--surface); stroke: var(--cta); stroke-width: 2; }
+.js .cm-animate .cm-threads{ opacity: 0; animation: threadsIn 1s ease 1.9s forwards; }
+@keyframes threadsIn{ to{ opacity: 1; } }
 
 /* ==========================================================================
    Home — client marquee
@@ -1799,7 +1843,5 @@ html[data-theme="dark"] .msg.me{ color: #F7F3EA; }
   .js .reveal-media{ clip-path: none; }
   .js .reveal-media img, .js .reveal-media .panel-bg{ scale: 1; }
   .media img{ transform: none; }
-  .band-media img{ height: 100%; }
   .marquee{ overflow-x: auto; }
-  .svc-stack .svc{ position: static !important; }
 }

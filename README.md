@@ -23,7 +23,7 @@ be uploaded to any static host as-is.
 | `thank-you/index.html` | Post-enquiry page, served at `https://cognimorph.co/thank-you`. |
 | `css/styles.css` | Design system: brand tokens, components, motion, reduced-motion rules. |
 | `js/site.js` | Shared behaviour: menu, reveals, parallax, contact form, assistant. Settings in `CONFIG`. |
-| `js/home.js` | Home only: C+M mark controller, typewriter, marquee, counters, tool stack. |
+| `js/home.js` | Home only: C+M mark and threads, services showcase, world network canvas, manifesto, marquees, counters, tool stack. |
 | `scripts/build.mjs` | Shared header/footer, Content-Security-Policy meta, minification. Navigation and footer links live here. |
 | `_headers` | Security + caching headers for Netlify / Cloudflare Pages (mirror them on other hosts). |
 | `assets/` | Self-hosted variable fonts, responsive AVIF/WebP/JPEG imagery, logos, icons. |
