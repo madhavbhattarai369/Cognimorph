@@ -128,6 +128,11 @@ input, textarea, select{ font-family: inherit; font-size: 1rem; }
   border-radius: 2px;
 }
 
+/* wider screens get a wider layout, so large laptops and monitors are not left with empty side margins */
+@media (min-width: 1440px){ :root{ --container: 1320px; } }
+@media (min-width: 1680px){ :root{ --container: 1480px; } }
+@media (min-width: 1920px){ :root{ --container: 1600px; } }
+
 .container{
   max-width: var(--container);
   margin: 0 auto;
