@@ -13,6 +13,7 @@
     initServiceStack(C);
     initNotes(C);
     initRoadmap(C);
+    initFlyway(C);
     initWorld(C);
     initOrbit(C);
     initKinetic(C);
@@ -423,6 +424,109 @@
       });
     });
     C.queueScroll();
+  }
+
+  // ---- How we work (desktop): pinned track, one card flies from step to step --------
+  function initFlyway(C){
+    var section = document.querySelector('.roadmap-section');
+    var map = section && section.querySelector('.roadmap');
+    if(!map || C.reducedMotion) return;
+    var mq = window.matchMedia('(min-width: 900px) and (min-height: 640px)');
+    var steps = Array.prototype.slice.call(map.querySelectorAll('.rm-step')).map(function(s){
+      return {
+        icon: s.querySelector('.rm-node').innerHTML,
+        num: s.querySelector('.rm-num').textContent,
+        when: s.querySelector('.rm-when').textContent,
+        title: s.querySelector('h3').textContent,
+        lead: s.querySelector('.rm-lead').textContent,
+        detail: s.querySelector('.rm-detail').textContent
+      };
+    });
+    var N = steps.length;
+    var intro = section.querySelector('.section-intro');
+    var fly = document.createElement('div');
+    fly.className = 'fly';
+    fly.setAttribute('aria-hidden', 'true');
+    fly.innerHTML =
+      '<div class="fly-stage">'
+      + '<div class="fly-intro"></div>'
+      + '<div class="fly-lane">'
+      +   '<div class="fly-card"><div class="fly-meta"><span class="fly-num"></span><span class="rm-when fly-when"></span></div>'
+      +   '<h3 class="fly-title"></h3><p class="fly-lead"></p><p class="fly-detail"></p></div>'
+      + '</div>'
+      + '<div class="fly-track"><span class="fly-rail"><span class="fly-fill"></span></span>'
+      + steps.map(function(s, i){
+          return '<div class="fly-station" style="--x:' + (i / (N - 1) * 100) + '%">'
+            + '<span class="fly-node">' + s.icon + '</span>'
+            + '<span class="fly-label"><b>' + s.num + '</b> ' + s.title + '</span></div>';
+        }).join('')
+      + '</div>'
+      + '<p class="fly-hint"><span></span>Scroll to move through the process</p>'
+      + '</div>';
+    map.parentNode.insertBefore(fly, map);
+    var stage = fly.querySelector('.fly-stage');
+    var card = fly.querySelector('.fly-card');
+    var lane = fly.querySelector('.fly-lane');
+    var fill = fly.querySelector('.fly-fill');
+    var trackEl = fly.querySelector('.fly-track');
+    var stations = Array.prototype.slice.call(fly.querySelectorAll('.fly-station'));
+    var slots = { num: card.querySelector('.fly-num'), when: card.querySelector('.fly-when'), title: card.querySelector('.fly-title'), lead: card.querySelector('.fly-lead'), detail: card.querySelector('.fly-detail') };
+    var shown = -1, lastPos = 0, visible = false;
+
+    function place(active){
+      if(active){
+        section.classList.add('is-fly');
+        if(intro && intro.parentNode !== fly.querySelector('.fly-intro')) fly.querySelector('.fly-intro').appendChild(intro);
+      } else {
+        section.classList.remove('is-fly');
+        if(intro && intro.parentNode !== section.querySelector('.container')) section.querySelector('.container').insertBefore(intro, section.querySelector('.container').firstChild);
+      }
+    }
+    function show(i, dir){
+      if(i === shown) return;
+      var s = steps[i];
+      card.classList.remove('swap-l', 'swap-r'); void card.offsetWidth;
+      card.classList.add(dir < 0 ? 'swap-l' : 'swap-r');
+      slots.num.textContent = s.num; slots.when.textContent = s.when; slots.title.textContent = s.title;
+      slots.lead.textContent = s.lead; slots.detail.textContent = s.detail;
+      shown = i;
+    }
+    function smooth(t){ return t * t * (3 - 2 * t); }
+
+    function update(y, vh){
+      if(!mq.matches || !visible) return;
+      var r = fly.getBoundingClientRect();
+      var p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height - vh)));
+      var raw = p * (N - 1);
+      // rest on each station for most of its stretch, fly for the middle part
+      var seg = Math.min(N - 2, Math.floor(raw)), f = raw - seg;
+      var t = smooth(Math.max(0, Math.min(1, (f - 0.3) / 0.4)));
+      var pos = raw >= N - 1 ? N - 1 : seg + t;
+      var dir = pos >= lastPos ? 1 : -1; lastPos = pos;
+      var laneW = lane.clientWidth, cardW = card.offsetWidth;
+      var tr = trackEl.getBoundingClientRect(), lr = lane.getBoundingClientRect();
+      var x = (tr.left - lr.left) + (pos / (N - 1)) * tr.width - cardW / 2;
+      var cx = Math.max(0, Math.min(laneW - cardW, x));
+      card.style.setProperty('--stem', (cardW / 2 + (x - cx)).toFixed(1) + 'px');
+      x = cx;
+      var arc = Math.sin(Math.PI * (pos - Math.floor(pos)));
+      card.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + (-arc * 26).toFixed(1) + 'px,0) rotate(' + (dir * arc * 4).toFixed(2) + 'deg) scale(' + (1 + arc * 0.03).toFixed(3) + ')';
+      card.classList.toggle('is-flying', arc > 0.08);
+      fill.style.transform = 'scaleX(' + (pos / (N - 1)).toFixed(4) + ')';
+      var idx = Math.round(pos);
+      stations.forEach(function(st, i){
+        st.classList.toggle('is-done', i < idx);
+        st.classList.toggle('is-on', i === idx);
+      });
+      show(idx, dir);
+    }
+
+    function onMQ(){ place(mq.matches); C.queueScroll(); }
+    if(mq.addEventListener) mq.addEventListener('change', onMQ);
+    onMQ();
+    show(0, 1);
+    C.observe([fly], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
+    C.onScrollFrame(update);
   }
 
   // ---- Kinetic capabilities marquee: drifts, and speeds up / reverses with scroll ---

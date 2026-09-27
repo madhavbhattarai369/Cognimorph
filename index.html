@@ -792,49 +792,56 @@
       <h2 class="reveal-up">Industries we <em class="hl">know</em>.</h2>
       <p class="lede mt-2">Each sector buys differently. These are the ones where we already understand the funnel, the margins and the objections.</p>
 
-      <div class="ind-grid stagger">
-        <article class="ind reveal-up">
+      <div class="rail reveal-up">
+      <div class="rail-controls">
+        <div class="rail-progress" aria-hidden="true"><span></span></div>
+        <button type="button" class="icon-btn rail-btn" data-dir="-1" aria-label="Previous industry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg></button>
+        <button type="button" class="icon-btn rail-btn" data-dir="1" aria-label="Next industry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="rail-track ind-rail stagger" tabindex="0" role="region" aria-label="Industries we know, scrollable">
+        <article class="ind">
           <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-saas-600.avif 600w, assets/ind-saas-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-saas-600.webp 600w, assets/ind-saas-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-saas-1000.jpg" alt="Abstract dashboard graphic representing SaaS" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>SaaS &amp; B2B</h3>
             <p>Long cycles, many stakeholders. We build for pipeline and demo bookings, not raw traffic.</p>
           </div>
         </article>
-        <article class="ind reveal-up">
+        <article class="ind">
           <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-ecommerce-600.avif 600w, assets/ind-ecommerce-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-ecommerce-600.webp 600w, assets/ind-ecommerce-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-ecommerce-1000.jpg" alt="Abstract product grid graphic representing e-commerce" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>E-commerce &amp; retail</h3>
             <p>Catalogue feeds, creative volume and clean attribution — the three things that decide margin.</p>
           </div>
         </article>
-        <article class="ind reveal-up">
+        <article class="ind">
           <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-yoga-600.avif 600w, assets/ind-yoga-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-yoga-600.webp 600w, assets/ind-yoga-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-yoga-1000.jpg" alt="Concentric calm circles representing wellness" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>Yoga &amp; wellness</h3>
             <p>Trust is earned slowly here. Content and community do the work that hard selling can&rsquo;t.</p>
           </div>
         </article>
-        <article class="ind reveal-up">
+        <article class="ind">
           <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-beauty-600.avif 600w, assets/ind-beauty-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-beauty-600.webp 600w, assets/ind-beauty-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-beauty-1000.jpg" alt="Soft petal arcs representing beauty products" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>Beauty &amp; personal care</h3>
             <p>Creative-led and proof-driven. Before-and-after, UGC and repeat purchase economics.</p>
           </div>
         </article>
-        <article class="ind reveal-up">
+        <article class="ind">
           <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-fmcg-600.avif 600w, assets/ind-fmcg-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-fmcg-600.webp 600w, assets/ind-fmcg-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-fmcg-1000.jpg" alt="Shelf grid representing FMCG" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>FMCG</h3>
             <p>Reach and distribution first, with brand consistency that holds across every shelf and feed.</p>
           </div>
         </article>
-        <article class="ind reveal-up">
+        <article class="ind">
           <div class="ind-media"><picture><source type="image/avif" srcset="assets/ind-realestate-600.avif 600w, assets/ind-realestate-1000.avif 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><source type="image/webp" srcset="assets/ind-realestate-600.webp 600w, assets/ind-realestate-1000.webp 1000w" sizes="(max-width: 600px) 92vw, (max-width: 940px) 46vw, 380px"><img src="assets/ind-realestate-1000.jpg" alt="Building skyline representing real estate" loading="lazy" decoding="async" width="1000" height="750"></picture></div>
           <div class="ind-body">
             <h3>Real estate</h3>
             <p>High-value, low-volume leads. Qualification matters more than cost per enquiry.</p>
           </div>
         </article>
+      </div>
       </div>
     </div>
   </section>
@@ -849,8 +856,14 @@
         </div>
         <p class="lede">Products and brands we are proud to work with, from AI apps to natural fashion.</p>
       </div>
-      <div class="work-grid stagger">
-        <a class="work-card reveal-up" href="work.html#risespace">
+      <div class="rail reveal-up">
+      <div class="rail-controls">
+        <div class="rail-progress" aria-hidden="true"><span></span></div>
+        <button type="button" class="icon-btn rail-btn" data-dir="-1" aria-label="Previous project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg></button>
+        <button type="button" class="icon-btn rail-btn" data-dir="1" aria-label="Next project"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="rail-track work-rail stagger" tabindex="0" role="region" aria-label="Selected work, scrollable">
+        <a class="work-card" href="work.html#risespace">
           <div class="case-visual"><svg class="cv cv-rise" viewBox="0 0 400 260" aria-hidden="true" focusable="false">
   <rect class="cv-bg" width="400" height="260" rx="0"/>
   <g transform="translate(40 36)">
@@ -876,7 +889,7 @@
             <span class="work-more">From habit tracker to AI coach <span class="btn-arrow" aria-hidden="true">&rarr;</span></span>
           </div>
         </a>
-        <a class="work-card reveal-up" href="work.html#hello5">
+        <a class="work-card" href="work.html#hello5">
           <div class="case-visual"><svg class="cv cv-hello" viewBox="0 0 400 260" aria-hidden="true" focusable="false">
   <rect class="cv-bg" width="400" height="260"/>
   <g transform="translate(36 30)">
@@ -904,7 +917,7 @@
             <span class="work-more">From CV scan to auto-apply <span class="btn-arrow" aria-hidden="true">&rarr;</span></span>
           </div>
         </a>
-        <a class="work-card reveal-up" href="work.html#bilva">
+        <a class="work-card" href="work.html#bilva">
           <div class="case-visual"><svg class="cv cv-bilva" viewBox="0 0 400 260" aria-hidden="true" focusable="false">
   <rect class="cv-bg" width="400" height="260"/>
   <g class="weave"><path class="th th0" d="M-10 40 C 90 20, 150 60, 210 40 S 330 20, 410 40" style="--d:0.00s"/><path class="th th1" d="M-10 56 C 90 36, 150 76, 210 56 S 330 36, 410 56" style="--d:0.25s"/><path class="th th2" d="M-10 72 C 90 52, 150 92, 210 72 S 330 52, 410 72" style="--d:0.50s"/><path class="th th0" d="M-10 88 C 90 68, 150 108, 210 88 S 330 68, 410 88" style="--d:0.75s"/><path class="th th1" d="M-10 104 C 90 84, 150 124, 210 104 S 330 84, 410 104" style="--d:1.00s"/><path class="th th2" d="M-10 120 C 90 100, 150 140, 210 120 S 330 100, 410 120" style="--d:1.25s"/><path class="th th0" d="M-10 136 C 90 116, 150 156, 210 136 S 330 116, 410 136" style="--d:1.50s"/><path class="th th1" d="M-10 152 C 90 132, 150 172, 210 152 S 330 132, 410 152" style="--d:1.75s"/><path class="th th2" d="M-10 168 C 90 148, 150 188, 210 168 S 330 148, 410 168" style="--d:2.00s"/><path class="th th0" d="M-10 184 C 90 164, 150 204, 210 184 S 330 164, 410 184" style="--d:2.25s"/><path class="th th1" d="M-10 200 C 90 180, 150 220, 210 200 S 330 180, 410 200" style="--d:2.50s"/><path class="th th2" d="M-10 216 C 90 196, 150 236, 210 216 S 330 196, 410 216" style="--d:2.75s"/></g>
@@ -920,6 +933,7 @@
             <span class="work-more">Timeless, natural, made to last <span class="btn-arrow" aria-hidden="true">&rarr;</span></span>
           </div>
         </a>
+      </div>
       </div>
       <div class="mt-3"><a class="btn btn-secondary" href="work.html">See all work <span class="btn-arrow" aria-hidden="true">&rarr;</span></a></div>
     </div>
@@ -1021,7 +1035,6 @@
         </ul>
       </div>
     </div>
-    <p class="footer-disclaimer">Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
     <div class="footer-bottom">
       <span>&copy; <span id="footer-year">2026</span> Cognimorph. All rights reserved.</span>
       <div class="footer-bottom-links">

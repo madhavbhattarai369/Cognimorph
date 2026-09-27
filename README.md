@@ -11,6 +11,8 @@ npm run build    # renders header/footer into every page, minifies CSS + JS
 npm start        # serves the folder at http://localhost:8080
 ```
 
+The build also assembles `dist/` (public files only), which is what Netlify publishes (`netlify.toml`).
+
 Pages load the **minified** files (`css/styles.min.css`, `js/site.min.js`, `js/home.min.js`), so run
 `npm run build` after editing any source file. The built output is committed, so the folder can
 be uploaded to any static host as-is.

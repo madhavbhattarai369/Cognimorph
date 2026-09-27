@@ -46,14 +46,32 @@ visitor is sent to a dead number.
 - Make sure the host serves `404.html` for missing pages and `thank-you/index.html` at `/thank-you`.
 - If you add analytics, update the Content-Security-Policy in `scripts/build.mjs` and `_headers`, and the privacy policy.
 
-## Publishing
-1. Upload the whole folder (it is already built) to the host, or connect the repo and use `npm run build`
-   as the build command with the project root as the output directory.
-2. Point `cognimorph.co` at the host and enable HTTPS.
-3. Check `https://cognimorph.co/thank-you`, a missing page (should show the 404 page) and the contact form.
-4. SEO / AEO: submit `sitemap.xml` in Google Search Console and Bing Webmaster Tools, and test the home page
-   in Google's Rich Results Test (Organization, WebSite and FAQ structured data). `llms.txt` gives AI answer
-   engines a plain summary of the site.
+## Publishing (Netlify + Namecheap)
+The repo is ready for Netlify: `netlify.toml` runs `npm run build` and publishes `dist/` (public files only).
+`_headers` (security + caching) and `404.html` are picked up automatically; `/thank-you` is served from
+`thank-you/index.html`.
+
+**1. Netlify**
+1. Sign in at app.netlify.com with GitHub, then **Add new site → Import an existing project → GitHub**.
+2. Pick `madhavbhattarai369/Cognimorph` and the branch that holds the site. Build settings fill in from
+   `netlify.toml`; click **Deploy**. Check the preview URL (`something.netlify.app`).
+3. **Domain management → Add a domain →** `cognimorph.co`. Choose to keep DNS at Namecheap
+   ("external DNS"). Netlify then shows the records to create.
+
+**2. Namecheap (Domain List → Manage → Advanced DNS → Host Records)**
+- Delete the parking records: any `URL Redirect Record` for `@`, and `CNAME www → parkingpage.namecheap.com`.
+- Add **A Record**: Host `@`, Value `75.2.60.5` (Netlify's load balancer; use the value Netlify shows if it
+  differs), TTL Automatic.
+- Add **CNAME Record**: Host `www`, Value `your-site-name.netlify.app`, TTL Automatic.
+- Do **not** delete MX, TXT (SPF/DKIM) or other mail records: they keep hello@cognimorph.co working.
+
+**3. After DNS updates (minutes to a few hours)**
+- Netlify → Domain management: set `cognimorph.co` as primary (www redirects to it) and confirm HTTPS
+  (Let's Encrypt) is active.
+- Open `https://cognimorph.co/thank-you`, a made-up URL (should show the 404 page) and send one test
+  enquiry, then click FormSubmit's activation email.
+- SEO / AEO: submit `https://cognimorph.co/sitemap.xml` in Google Search Console and Bing Webmaster Tools,
+  and run the home page through Google's Rich Results Test.
 
 ## 5. Analytics and tracking
 Not installed deliberately — you should choose and configure these.

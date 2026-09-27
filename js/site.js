@@ -116,6 +116,7 @@
     initMagnetic();
     initCounters();
     initPanels();
+    initRails();
     initAmbientPause();
     initContactForm();
     initAssistant();
@@ -343,6 +344,60 @@
         });
         if(finePointer) p.addEventListener('pointerenter', function(){ open(p); });
       });
+    });
+  }
+
+  // ---- Side-scrolling rails: arrows, progress, drag-to-scroll on desktop ------------
+  function initRails(){
+    Array.prototype.forEach.call(document.querySelectorAll('.rail'), function(rail){
+      var track = rail.querySelector('.rail-track');
+      var btns = rail.querySelectorAll('.rail-btn');
+      var bar = rail.querySelector('.rail-progress');
+      if(!track) return;
+      function step(){ var c = track.firstElementChild; return c ? c.getBoundingClientRect().width + 16 : 300; }
+      function sync(){
+        var max = track.scrollWidth - track.clientWidth;
+        var p = max > 0 ? track.scrollLeft / max : 1;
+        var vis = track.scrollWidth ? track.clientWidth / track.scrollWidth : 1;
+        if(bar) bar.style.setProperty('--rp', Math.min(1, vis + (1 - vis) * p).toFixed(3));
+        if(btns[0]) btns[0].disabled = track.scrollLeft <= 2;
+        if(btns[1]) btns[1].disabled = track.scrollLeft >= max - 2;
+        rail.classList.toggle('is-static', max <= 2);
+      }
+      Array.prototype.forEach.call(btns, function(b){
+        b.addEventListener('click', function(){
+          track.scrollBy({ left: step() * (+b.getAttribute('data-dir')), behavior: reducedMotion ? 'auto' : 'smooth' });
+        });
+      });
+      track.addEventListener('scroll', function(){ requestAnimationFrame(sync); }, { passive: true });
+      window.addEventListener('resize', sync);
+      track.addEventListener('keydown', function(e){
+        if(e.key === 'ArrowRight'){ e.preventDefault(); track.scrollBy({ left: step(), behavior: 'smooth' }); }
+        if(e.key === 'ArrowLeft'){ e.preventDefault(); track.scrollBy({ left: -step(), behavior: 'smooth' }); }
+      });
+      // drag with the mouse; clicks still work when the pointer barely moved
+      if(finePointer){
+        var down = false, startX = 0, startLeft = 0, moved = 0;
+        track.addEventListener('pointerdown', function(e){
+          if(e.pointerType !== 'mouse' || e.button !== 0) return;
+          down = true; moved = 0; startX = e.clientX; startLeft = track.scrollLeft;
+        });
+        window.addEventListener('pointermove', function(e){
+          if(!down) return;
+          var dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx));
+          if(moved > 6){ track.classList.add('is-dragging'); track.scrollLeft = startLeft - dx; }
+        });
+        window.addEventListener('pointerup', function(){
+          if(!down) return; down = false;
+          if(track.classList.contains('is-dragging')){
+            track.classList.remove('is-dragging');
+            // settle onto the nearest card
+            var w = step(); track.scrollTo({ left: Math.round(track.scrollLeft / w) * w, behavior: 'smooth' });
+          }
+        });
+        track.addEventListener('click', function(e){ if(moved > 6){ e.preventDefault(); e.stopPropagation(); } }, true);
+      }
+      sync();
     });
   }
 

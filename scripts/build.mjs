@@ -5,7 +5,7 @@
 // 2. Minifies css/styles.css and js/*.js into the .min files the pages load.
 //
 // Edit navigation, footer links or contact details here, then run `npm run build`.
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, rmSync, mkdirSync, cpSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
@@ -118,7 +118,6 @@ function footer(root) {
       </div>
 ${cols}
     </div>
-    <p class="footer-disclaimer">Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
     <div class="footer-bottom">
       <span>&copy; <span id="footer-year">${new Date().getFullYear()}</span> Cognimorph. All rights reserved.</span>
       <div class="footer-bottom-links">
@@ -178,4 +177,17 @@ if (existsSync(headersPath)) {
 await build({ entryPoints: ['js/site.js', 'js/home.js'].map(f => join(ROOT, f)), outdir: join(ROOT, 'js'), outExtension: { '.js': '.min.js' }, minify: true, target: 'es2017', logLevel: 'warning' });
 await build({ entryPoints: [join(ROOT, 'css/styles.css')], outfile: join(ROOT, 'css/styles.min.css'), minify: true, logLevel: 'warning' });
 
-console.log(`Built: ${PAGES.length} pages checked, ${changed} updated; css/styles.min.css, js/site.min.js, js/home.min.js written.`);
+// 3. Assemble dist/: only the files the public site needs (no docs, sources or build scripts)
+const DIST = join(ROOT, 'dist');
+rmSync(DIST, { recursive: true, force: true });
+mkdirSync(DIST);
+const PUBLIC = [
+  ...readdirSync(ROOT).filter(f => f.endsWith('.html')),
+  'thank-you', 'assets', 'css/styles.min.css', 'js/site.min.js', 'js/home.min.js',
+  'site.webmanifest', 'robots.txt', 'sitemap.xml', 'llms.txt', '_headers'
+];
+for (const p of PUBLIC) {
+  if (existsSync(join(ROOT, p))) cpSync(join(ROOT, p), join(DIST, p), { recursive: true });
+}
+
+console.log(`Built: ${PAGES.length} pages checked, ${changed} updated; css/styles.min.css, js/site.min.js, js/home.min.js written; dist/ ready to publish.`);
