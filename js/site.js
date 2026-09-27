@@ -485,6 +485,13 @@
       status.innerHTML = 'That didn’t send. Please email '
         + '<a href="mailto:' + CONFIG.email + '" class="text-link">' + CONFIG.email + '</a> directly and we’ll pick it up.';
     }
+    // If the quick (AJAX) send is refused — e.g. FormSubmit is still waiting for its one-time
+    // activation, or a network filter blocks it — post the form the classic way instead.
+    // FormSubmit then delivers it (or sends the activation email) and returns to _next.
+    function fallback(reason){
+      if(window.console) console.warn('Contact form: quick send failed (' + reason + '), posting normally.');
+      try{ HTMLFormElement.prototype.submit.call(form); }catch(err){ fail(); }
+    }
 
     form.addEventListener('submit', function(e){
       e.preventDefault();
@@ -501,12 +508,13 @@
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(payload)
       })
-      .then(function(r){ if(!r.ok) throw new Error('rejected'); return r.json().catch(function(){ return {}; }); })
-      .then(function(data){
-        if(data && (data.success === false || data.success === 'false')) throw new Error('rejected');
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        var d = res.data || {};
+        if(!res.ok || d.success === false || d.success === 'false'){ fallback(d.message || ('HTTP error')); return; }
         window.location.assign(redirect);
       })
-      .catch(fail);
+      .catch(function(err){ fallback(err && err.message ? err.message : 'network'); });
     });
   }
 

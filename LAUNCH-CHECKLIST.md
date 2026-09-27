@@ -117,3 +117,14 @@ Not installed deliberately — you should choose and configure these.
   trademark holders' request, so those are original glyphs. If you want the official
   marks, download them from each brand's own asset page and check the usage terms.
 - All motion respects `prefers-reduced-motion`.
+
+
+## Contact form troubleshooting
+- FormSubmit only delivers after a one-time activation. The first enquiry sent from the live site triggers
+  an email to hello@cognimorph.co titled "Activate Form" (check spam/promotions). Click **Activate Form**;
+  enquiries arrive from then on.
+- Until then the quick (AJAX) send is refused; the site automatically falls back to a normal form post,
+  which shows FormSubmit's own page and then returns to /thank-you.
+- hello@cognimorph.co must be a working mailbox (MX records in Namecheap must stay in place).
+- After activation, FormSubmit emails a random alias; you can replace `hello@cognimorph.co` in the two form
+  URLs in `contact.html` with that alias so the address is not exposed to spam bots.
