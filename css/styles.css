@@ -734,22 +734,17 @@ html[data-theme="dark"] .theme-toggle .icon-sun{ display: block; }
 .legal-toc a{ font-size: .82rem; padding: .35em .8em; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--text-soft); transition: border-color .2s ease, color .2s ease; }
 .legal-toc a:hover{ border-color: var(--accent); color: var(--text); }
 
-/* ---- About: live network banner ---- */
-.net-banner{ background: #102A3A; }
-.net-svg{ display: block; width: 100%; height: 100%; }
-.net-lines line{ stroke: #F4EFE4; stroke-width: 1; }
-.net-path{ fill: none; stroke: rgba(233,106,36,.45); stroke-width: 2.5; }
-.net-flow{ fill: none; stroke: #F47A32; stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 60 var(--len); animation: netFlow 5s linear infinite; }
-.net-flow-2{ animation-delay: -2.5s; stroke-width: 2.5; opacity: .7; }
-@keyframes netFlow{ from{ stroke-dashoffset: calc(var(--len) + 60); } to{ stroke-dashoffset: 0; } }
-.net-node{ fill: #F4EFE4; opacity: .55; animation: netTwinkle 4s ease-in-out infinite; animation-delay: var(--d); }
-@keyframes netTwinkle{ 0%,100%{ opacity: .35; } 50%{ opacity: .95; } }
-.net-hot{ fill: #E96A24; }
-.net-ring{ fill: none; stroke: #E96A24; stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: netRing 3s ease-out infinite; animation-delay: var(--d); }
-@keyframes netRing{ 0%{ transform: scale(.4); opacity: .9; } 80%,100%{ transform: scale(1.6); opacity: 0; } }
-.net-glow{ animation: netGlow 9s ease-in-out infinite alternate; }
-@keyframes netGlow{ from{ opacity: .55; } to{ opacity: 1; } }
-.net-banner.is-paused *{ animation-play-state: paused !important; }
+/* ---- About: world network header ---- */
+.about-world{
+  margin-top: clamp(2.5rem, 5vw, 3.5rem); padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2.5rem) 1.2rem;
+  border-radius: 14px; overflow: hidden;
+  background: radial-gradient(60% 80% at 70% 40%, rgba(21,94,145,.55), transparent 70%), linear-gradient(120deg, #08141E, #102A3A 55%, #123a55);
+  box-shadow: var(--shadow-lg);
+}
+.about-world .world{ max-width: 980px; margin: 0 auto; }
+.about-world-cap{ display: flex; align-items: center; gap: .6rem; margin: .6rem 0 0; font-size: .8rem; color: rgba(244,239,228,.72); }
+.about-world-cap span{ width: 8px; height: 8px; border-radius: 50%; background: #E96A24; box-shadow: 0 0 0 0 rgba(233,106,36,.6); animation: livePulse 2s ease-out infinite; }
+@keyframes livePulse{ 0%{ box-shadow: 0 0 0 0 rgba(233,106,36,.6); } 100%{ box-shadow: 0 0 0 10px rgba(233,106,36,0); } }
 
 /* ==========================================================================
    Services page — "What's included" boxes
@@ -1032,6 +1027,37 @@ html[data-theme="dark"] .xpanel.is-open{ background: #155E91; }
 .fly-hint{ display: flex; align-items: center; gap: .7rem; margin: 0; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
 .fly-hint span{ position: relative; width: 36px; height: 1px; background: var(--border-strong); overflow: hidden; }
 .fly-hint span::after{ content: ""; position: absolute; inset: 0; background: var(--cta); animation: cueSweep 2.6s var(--ease-in-out) infinite; }
+
+/* ---- Team: location chips, offices, looping rows on phones ---- */
+.loc{
+  display: inline-flex; align-items: center; gap: .35rem; margin: .1rem 0 .6rem;
+  padding: .25em .7em .25em .5em; border-radius: var(--radius-pill);
+  font-size: .78rem; font-weight: 500; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.loc svg{ width: 13px; height: 13px; flex-shrink: 0; }
+.leader .loc{ background: color-mix(in srgb, var(--cta) 10%, transparent); border-color: color-mix(in srgb, var(--cta) 30%, transparent); color: color-mix(in srgb, var(--cta) 55%, var(--text)); }
+.offices{ display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+@media (max-width: 860px){ .offices{ grid-template-columns: 1fr; } }
+.office-list{ display: grid; gap: 1rem; }
+.office{ display: flex; gap: 1rem; align-items: center; padding: 1.3rem 1.4rem; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: transform .5s var(--ease-out), box-shadow .5s var(--ease-out); }
+.office:hover{ transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.office h3{ font-size: 1.3rem; margin-bottom: .15rem; }
+.office p{ margin: 0; color: var(--text-soft); font-size: .93rem; }
+.office-icon{ width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--cta) 13%, transparent); color: var(--cta); }
+.office-icon svg{ width: 22px; height: 22px; }
+.footer-offices{ font-size: .88rem; color: rgba(244,239,228,.66); margin-top: .4rem; }
+@media (max-width: 700px){
+  .card-grid[data-loop]{
+    display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72%;
+    gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    margin-right: calc(-1 * var(--gutter)); padding-right: var(--gutter);
+  }
+  .card-grid[data-loop]::-webkit-scrollbar{ display: none; }
+  .card-grid[data-loop] > *{ scroll-snap-align: start; }
+  .card-grid[data-loop] .profile-photo{ aspect-ratio: 1 / 1; }
+}
 
 /* ---- Careers ---- */
 .role-list{ border-top: 1px solid var(--border-strong); }

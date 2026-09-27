@@ -1,0 +1,4 @@
+Contact: mailto:hello@cognimorph.co
+Expires: 2027-09-27T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://cognimorph.co/.well-known/security.txt

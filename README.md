@@ -26,9 +26,11 @@ be uploaded to any static host as-is.
 | `css/styles.css` | Design system: brand tokens, components, motion, reduced-motion rules. |
 | `js/site.js` | Shared behaviour: menu, reveals, parallax, counters, expanding panels, contact form, assistant. Settings in `CONFIG`. |
 | `js/home.js` | Home only: C+M mark and threads, services showcase, world network canvas, manifesto, marquees, counters, tool stack. |
+| `js/world.js` | Home and About: the live world network canvas. |
 | `scripts/build.mjs` | Shared header/footer, Content-Security-Policy meta, minification. Navigation and footer links live here. |
 | `llms.txt`, `sitemap.xml`, `robots.txt` | Search and AI-answer-engine discovery files. |
-| `_headers` | Security + caching headers for Netlify / Cloudflare Pages (mirror them on other hosts). |
+| `_headers`, `vercel.json` | Security + caching headers for Netlify / Cloudflare Pages and Vercel (kept in sync by the build). |
+| `.well-known/security.txt` | How to report a security issue. |
 | `assets/` | Self-hosted variable fonts, responsive AVIF/WebP/JPEG imagery, logos, icons. |
 
 ## Contact flow

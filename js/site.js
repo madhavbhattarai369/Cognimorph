@@ -117,6 +117,7 @@
     initCounters();
     initPanels();
     initRails();
+    initLoops();
     initAmbientPause();
     initContactForm();
     initAssistant();
@@ -401,9 +402,60 @@
     });
   }
 
+  // ---- Looping rows (team on phones): swipe endlessly, gentle auto-advance -----------
+  function initLoops(){
+    var rows = Array.prototype.slice.call(document.querySelectorAll('[data-loop]'));
+    if(!rows.length || !window.matchMedia) return;
+    var mqSmall = window.matchMedia('(max-width: 700px)');
+    rows.forEach(function(row){
+      var originals = Array.prototype.slice.call(row.children);
+      var active = false, lastTouch = 0, visible = false, settle = null, timer = null;
+      function setWidth(){ var after = row.querySelector('.is-clone-after'); return after ? after.offsetLeft - originals[0].offsetLeft : 0; }
+      function clone(el, cls){
+        var c = el.cloneNode(true);
+        c.classList.add('is-clone', cls, 'is-visible');
+        c.setAttribute('aria-hidden', 'true');
+        c.setAttribute('inert', '');
+        return c;
+      }
+      function enable(){
+        if(active) return; active = true;
+        originals.forEach(function(el){ el.classList.add('is-visible'); });
+        originals.slice().reverse().forEach(function(el){ row.insertBefore(clone(el, 'is-clone-before'), row.firstChild); });
+        originals.forEach(function(el){ row.appendChild(clone(el, 'is-clone-after')); });
+        requestAnimationFrame(function(){ row.scrollLeft = originals[0].offsetLeft - row.offsetLeft; });
+      }
+      function disable(){
+        if(!active) return; active = false;
+        Array.prototype.forEach.call(row.querySelectorAll('.is-clone'), function(c){ c.remove(); });
+        row.scrollLeft = 0;
+      }
+      function wrap(){
+        if(!active) return;
+        var w = setWidth(); if(!w) return;
+        var start = originals[0].offsetLeft - row.offsetLeft;
+        if(row.scrollLeft < start - w * 0.5) row.scrollLeft += w;
+        else if(row.scrollLeft > start + w * 0.5) row.scrollLeft -= w;
+      }
+      row.addEventListener('scroll', function(){ clearTimeout(settle); settle = setTimeout(wrap, 140); }, { passive: true });
+      ['touchstart', 'pointerdown', 'wheel'].forEach(function(ev){ row.addEventListener(ev, function(){ lastTouch = Date.now(); }, { passive: true }); });
+      observe([row], function(_, inView){ visible = inView; }, { once: false });
+      function sync(){ if(mqSmall.matches) enable(); else disable(); }
+      if(mqSmall.addEventListener) mqSmall.addEventListener('change', sync);
+      sync();
+      if(!reducedMotion){
+        timer = setInterval(function(){
+          if(!active || !visible || document.hidden || Date.now() - lastTouch < 5000) return;
+          var card = originals[0].getBoundingClientRect().width + 16;
+          row.scrollBy({ left: card, behavior: 'smooth' });
+        }, 3200);
+      }
+    });
+  }
+
   // ---- Pause looping panel animations when off-screen -----------------------------
   function initAmbientPause(){
-    var loops = document.querySelectorAll('.anim-panel, .net-banner, .case-visual');
+    var loops = document.querySelectorAll('.anim-panel, .case-visual, .orbit');
     observe(loops, function(el, inView){ el.classList.toggle('is-paused', !inView); }, { once: false });
   }
 

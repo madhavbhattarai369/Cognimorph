@@ -115,6 +115,7 @@ function footer(root) {
         <img src="${root}assets/logo-horizontal-dark.png" alt="Cognimorph" width="114" height="28" loading="lazy">
         <p>Your digital partner for the AI age. Built by an expert team in Nepal, accessible globally.</p>
         <p><a class="footer-link" href="mailto:${SITE.email}">${SITE.email}</a></p>
+        <p class="footer-offices">Offices: Kathmandu, Nepal &middot; Dubai, UAE</p>
       </div>
 ${cols}
     </div>
@@ -172,9 +173,17 @@ if (existsSync(headersPath)) {
   const hash = (csp(index).match(/'sha256-[^']+'/) || [''])[0];
   const h = readFileSync(headersPath, 'utf8').replace(/'sha256-[^']*'/, hash);
   writeFileSync(headersPath, h);
+  const vercelPath = join(ROOT, 'vercel.json');
+  if (existsSync(vercelPath)) {
+    const v = JSON.parse(readFileSync(vercelPath, 'utf8'));
+    for (const rule of v.headers || []) for (const hd of rule.headers) {
+      if (hd.key === 'Content-Security-Policy') hd.value = hd.value.replace(/'sha256-[^']*'/, hash);
+    }
+    writeFileSync(vercelPath, JSON.stringify(v, null, 2) + '\n');
+  }
 }
 
-await build({ entryPoints: ['js/site.js', 'js/home.js'].map(f => join(ROOT, f)), outdir: join(ROOT, 'js'), outExtension: { '.js': '.min.js' }, minify: true, target: 'es2017', logLevel: 'warning' });
+await build({ entryPoints: ['js/site.js', 'js/home.js', 'js/world.js'].map(f => join(ROOT, f)), outdir: join(ROOT, 'js'), outExtension: { '.js': '.min.js' }, minify: true, target: 'es2017', logLevel: 'warning' });
 await build({ entryPoints: [join(ROOT, 'css/styles.css')], outfile: join(ROOT, 'css/styles.min.css'), minify: true, logLevel: 'warning' });
 
 // 3. Assemble dist/: only the files the public site needs (no docs, sources or build scripts)
@@ -183,8 +192,8 @@ rmSync(DIST, { recursive: true, force: true });
 mkdirSync(DIST);
 const PUBLIC = [
   ...readdirSync(ROOT).filter(f => f.endsWith('.html')),
-  'thank-you', 'assets', 'css/styles.min.css', 'js/site.min.js', 'js/home.min.js',
-  'site.webmanifest', 'robots.txt', 'sitemap.xml', 'llms.txt', '_headers'
+  'thank-you', 'assets', 'css/styles.min.css', 'js/site.min.js', 'js/home.min.js', 'js/world.min.js',
+  'site.webmanifest', 'robots.txt', 'sitemap.xml', 'llms.txt', '_headers', '.well-known'
 ];
 for (const p of PUBLIC) {
   if (existsSync(join(ROOT, p))) cpSync(join(ROOT, p), join(DIST, p), { recursive: true });
