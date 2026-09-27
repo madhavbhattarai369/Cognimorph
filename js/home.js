@@ -19,7 +19,6 @@
     initTypewriter(C);
     initMarquee(C);
     initIconCloud(C);
-    initCounters(C);
     initTools(C);
   }
 
@@ -556,23 +555,6 @@
     function q(){ if(!queued){ queued = true; requestAnimationFrame(apply); } }
     cloud.addEventListener('pointermove', function(e){ ev = { x: e.clientX, y: e.clientY }; q(); });
     cloud.addEventListener('pointerleave', function(){ ev = null; q(); });
-  }
-
-  // ---- Metric counters: count up once, when scrolled into view -----------------------
-  function initCounters(C){
-    var counters = document.querySelectorAll('.count');
-    C.observe(counters, function(el){
-      var target = parseInt(el.getAttribute('data-to'), 10) || 0;
-      if(C.reducedMotion){ el.textContent = target; return; }
-      var dur = 1600, t0 = null;
-      function step(ts){
-        if(!t0) t0 = ts;
-        var p = Math.min((ts - t0) / dur, 1);
-        el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4)));
-        if(p < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }, { rootMargin: '0px 0px -15% 0px' });
   }
 
   // ---- Tool stack ------------------------------------------------------------------

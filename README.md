@@ -22,9 +22,10 @@ be uploaded to any static host as-is.
 | `*.html` | Pages. Header and footer blocks are generated — edit them in `scripts/build.mjs`. |
 | `thank-you/index.html` | Post-enquiry page, served at `https://cognimorph.co/thank-you`. |
 | `css/styles.css` | Design system: brand tokens, components, motion, reduced-motion rules. |
-| `js/site.js` | Shared behaviour: menu, reveals, parallax, contact form, assistant. Settings in `CONFIG`. |
+| `js/site.js` | Shared behaviour: menu, reveals, parallax, counters, expanding panels, contact form, assistant. Settings in `CONFIG`. |
 | `js/home.js` | Home only: C+M mark and threads, services showcase, world network canvas, manifesto, marquees, counters, tool stack. |
 | `scripts/build.mjs` | Shared header/footer, Content-Security-Policy meta, minification. Navigation and footer links live here. |
+| `llms.txt`, `sitemap.xml`, `robots.txt` | Search and AI-answer-engine discovery files. |
 | `_headers` | Security + caching headers for Netlify / Cloudflare Pages (mirror them on other hosts). |
 | `assets/` | Self-hosted variable fonts, responsive AVIF/WebP/JPEG imagery, logos, icons. |
 

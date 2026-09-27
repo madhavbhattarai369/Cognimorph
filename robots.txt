@@ -3,4 +3,7 @@ Allow: /
 Disallow: /404.html
 Disallow: /thank-you
 
+# Plain-language site summary for AI answer engines
+# https://cognimorph.co/llms.txt
+
 Sitemap: https://cognimorph.co/sitemap.xml

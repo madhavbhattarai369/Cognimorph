@@ -114,6 +114,8 @@
     initParallax();
     initSpotlight();
     initMagnetic();
+    initCounters();
+    initPanels();
     initAmbientPause();
     initContactForm();
     initAssistant();
@@ -301,6 +303,46 @@
         btn.style.transform = 'translate(' + (dx * 0.22).toFixed(1) + 'px,' + (dy * 0.32 - 2).toFixed(1) + 'px)';
       });
       btn.addEventListener('pointerleave', function(){ btn.style.transform = ''; });
+    });
+  }
+
+  // ---- Counters: count up once when scrolled into view (years count the last stretch)
+  function initCounters(){
+    var counters = document.querySelectorAll('.count');
+    observe(counters, function(el){
+      var target = parseInt(el.getAttribute('data-to'), 10) || 0;
+      if(reducedMotion){ el.textContent = target; return; }
+      var from = target > 1000 ? target - 25 : 0;
+      var dur = 1600, t0 = null;
+      function step(ts){
+        if(!t0) t0 = ts;
+        var p = Math.min((ts - t0) / dur, 1);
+        el.textContent = Math.round(from + (target - from) * (1 - Math.pow(1 - p, 4)));
+        if(p < 1) requestAnimationFrame(step);
+      }
+      el.textContent = from;
+      requestAnimationFrame(step);
+    }, { rootMargin: '0px 0px -15% 0px' });
+  }
+
+  // ---- Expanding panels: one open at a time; hover, click, Enter or Space ----------
+  function initPanels(){
+    Array.prototype.forEach.call(document.querySelectorAll('.xpanels'), function(group){
+      var panels = Array.prototype.slice.call(group.querySelectorAll('.xpanel'));
+      function open(p){
+        panels.forEach(function(x){
+          var on = x === p;
+          x.classList.toggle('is-open', on);
+          x.setAttribute('aria-expanded', String(on));
+        });
+      }
+      panels.forEach(function(p){
+        p.addEventListener('click', function(){ open(p); });
+        p.addEventListener('keydown', function(e){
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(p); }
+        });
+        if(finePointer) p.addEventListener('pointerenter', function(){ open(p); });
+      });
     });
   }
 

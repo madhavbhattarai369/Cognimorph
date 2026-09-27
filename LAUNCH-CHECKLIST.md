@@ -8,8 +8,10 @@ Ordered by impact. Items 1–4 should be done before the site goes public.
   product descriptions on `work.html`.
 - Metrics band on `index.html` (7+ years, 150+ campaigns, 12 markets, 4 disciplines) — confirm these
   figures, or edit them. The on-page "illustrative" labels were removed at the client's request.
-- `team.html` — Madhav Bhattarai, Bibek Shrestha and Nabin Bhattarai are real; other names are samples.
+- `team.html` — confirm every name and role (leadership, Nabin Bhattarai, Nirmal Roka, Sweta Pandey,
+  Saugat Bhandari and Martin Roeters were provided by the client; the rest are earlier sample names).
   Add real photos for everyone.
+- `about.html` — the "Founded 2019" fact comes from the original site data; confirm it.
 
 ## 2. Activate the contact form (one click)
 The form delivers to **hello@cognimorph.co** via FormSubmit and then sends the visitor to
@@ -43,6 +45,15 @@ visitor is sent to a dead number.
 - `_headers` works as-is on Netlify and Cloudflare Pages. On other hosts, set the same headers.
 - Make sure the host serves `404.html` for missing pages and `thank-you/index.html` at `/thank-you`.
 - If you add analytics, update the Content-Security-Policy in `scripts/build.mjs` and `_headers`, and the privacy policy.
+
+## Publishing
+1. Upload the whole folder (it is already built) to the host, or connect the repo and use `npm run build`
+   as the build command with the project root as the output directory.
+2. Point `cognimorph.co` at the host and enable HTTPS.
+3. Check `https://cognimorph.co/thank-you`, a missing page (should show the 404 page) and the contact form.
+4. SEO / AEO: submit `sitemap.xml` in Google Search Console and Bing Webmaster Tools, and test the home page
+   in Google's Rich Results Test (Organization, WebSite and FAQ structured data). `llms.txt` gives AI answer
+   engines a plain summary of the site.
 
 ## 5. Analytics and tracking
 Not installed deliberately — you should choose and configure these.
