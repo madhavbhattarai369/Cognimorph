@@ -13,7 +13,7 @@
     // are rendered by scripts/build.mjs — keep the two in step.)
     contactUrl: 'contact.html',
     email: 'hello@cognimorph.co',
-    linkedin: 'https://www.linkedin.com/company/cognimorph',
+    linkedin: 'https://www.linkedin.com/company/data-morph/',
     // WhatsApp business number in international format, digits only (e.g. '9779800000000').
     // Leave empty to hide every WhatsApp button until a real number is confirmed.
     whatsapp: ''
@@ -227,7 +227,9 @@
         }
       });
     }
-    el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
+    var label = el.cloneNode(true);
+    Array.prototype.slice.call(label.querySelectorAll('br')).forEach(function(br){ br.replaceWith(' '); });
+    el.setAttribute('aria-label', label.textContent.replace(/\s+/g, ' ').trim());
     walk(el);
     Array.prototype.slice.call(el.querySelectorAll('.w')).forEach(function(w){ w.setAttribute('aria-hidden', 'true'); });
     el.classList.add('split-words');

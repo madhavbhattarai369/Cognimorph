@@ -9,7 +9,7 @@
 - [AI & Automation](https://cognimorph.co/services.html#ai): Workflow automation, AI agents, AI consulting, team training.
 
 ## Company
-- [About](https://cognimorph.co/about.html): Vision, values and principles. Expert quality at a fair price, built on trust and mutual benefit.
+- [About](https://cognimorph.co/about.html): Founded in 2024 in Kathmandu, Nepal, with offices in Kathmandu and Dubai. Vision, values and principles. Expert quality at a fair price, built on trust and mutual benefit.
 - [Team](https://cognimorph.co/team.html): Madhav Bhattarai (Founder & CEO), Bibek Shrestha (Co-Founder & Director) and specialists in each discipline.
 - [Work](https://cognimorph.co/work.html): Risespace (AI productivity app), Hello5.ai (career intelligence), Bilva (fashion in natural thread).
 - [Careers](https://cognimorph.co/careers.html): Disciplines we hire for and how to apply.
@@ -17,3 +17,9 @@
 
 ## Frequently asked questions
 - [FAQ](https://cognimorph.co/#faq): Services, locations, pricing, free consultation, ad platforms, timelines and how to start.
+
+## Social profiles
+- [LinkedIn](https://www.linkedin.com/company/data-morph/)
+- [Instagram](https://www.instagram.com/cognimorph.co)
+- [Facebook](https://www.facebook.com/share/1FX7tAQfCJ/)
+- [TikTok](https://www.tiktok.com/@cognimorph_)

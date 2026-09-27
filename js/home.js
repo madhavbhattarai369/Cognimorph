@@ -16,6 +16,7 @@
     initFlyway(C);
     initOrbit(C);
     initKinetic(C);
+    initReviews(C);
     initTypewriter(C);
     initMarquee(C);
     initIconCloud(C);
@@ -399,28 +400,121 @@
   function initKinetic(C){
     var track = document.querySelector('.kinetic-track');
     if(!track || C.reducedMotion) return;
-    var x = 0, dir = -1, boost = 0, half = 0, visible = false, running = false, lastY = window.pageYOffset;
+    var row = track.closest('.kinetic-row');
+    var lastY = window.pageYOffset;
+    var loop = loopDrive(C, track, row, { speed: 0.6, section: track.closest('.kinetic'), skew: true });
+    C.onScrollFrame(function(y){
+      var dy = y - lastY; lastY = y;
+      if(dy !== 0) loop.nudge(dy > 0 ? -1 : 1, Math.abs(dy) * 0.12);
+    });
+  }
+
+  // ---- Controllable loop ----------------------------------------------------------
+  // Shared by the capabilities strip and the client reviews: drifts on its own, eases
+  // to a stop under the pointer or keyboard focus, and can be dragged, swiped or
+  // scrolled sideways (trackpad / shift + wheel). Releasing a drag keeps its momentum.
+  function loopDrive(C, track, area, opts){
+    var x = 0, dir = -1, boost = 0, half = 0, visible = false, running = false;
+    var speed = opts.speed, cur = speed, hold = false, paused = false;
+    var drag = null, fling = 0, dragEnded = 0;
     function measure(){ half = track.scrollWidth / 2; }
     measure();
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
-    C.onScrollFrame(function(y){
-      var dy = y - lastY; lastY = y;
-      if(dy !== 0){ dir = dy > 0 ? -1 : 1; boost = Math.min(18, boost + Math.abs(dy) * 0.12); }
-    });
+
+    function wrap(){ if(half){ while(x <= -half) x += half; while(x > 0) x -= half; } }
     function frame(){
       if(!visible){ running = false; return; }
-      boost *= 0.92;
-      x += dir * (0.6 + boost);
-      if(half){ if(x <= -half) x += half; if(x > 0) x -= half; }
-      var skew = Math.max(-6, Math.min(6, -dir * boost * 0.5));
-      track.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0) skewX(' + skew.toFixed(2) + 'deg)';
+      var target = (hold || paused || drag) ? 0 : speed;
+      cur += (target - cur) * 0.08;
+      if(Math.abs(target - cur) < 0.005) cur = target;
+      if(Math.abs(fling) < 0.02) fling = 0;
+      boost *= 0.92; fling *= 0.94;
+      if(!drag) x += dir * (cur + (hold ? 0 : boost)) + fling;
+      wrap();
+      var skew = (opts.skew && !hold) ? Math.max(-6, Math.min(6, -dir * boost * 0.5)) : 0;
+      track.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0)' + (skew ? ' skewX(' + skew.toFixed(2) + 'deg)' : '');
       requestAnimationFrame(frame);
     }
-    C.observe([track.closest('.kinetic')], function(_, inView){
+    C.observe([opts.section || area], function(_, inView){
       visible = inView;
       if(inView && !running){ running = true; requestAnimationFrame(frame); }
     }, { once: false, rootMargin: '0px' });
+
+    area.addEventListener('pointerenter', function(e){ if(e.pointerType === 'mouse') hold = true; });
+    area.addEventListener('pointerleave', function(e){ if(e.pointerType === 'mouse') hold = false; });
+    area.addEventListener('focusin', function(){ hold = true; });
+    area.addEventListener('focusout', function(){ hold = false; });
+
+    area.addEventListener('pointerdown', function(e){
+      if(e.button !== 0) return;
+      drag = { x: e.clientX, y: e.clientY, last: e.clientX, v: 0, moved: false, id: e.pointerId };
+    });
+    area.addEventListener('pointermove', function(e){
+      if(!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.last;
+      if(!drag.moved){
+        if(Math.abs(e.clientX - drag.x) < 6) return;
+        if(Math.abs(e.clientY - drag.y) > Math.abs(e.clientX - drag.x)){ drag = null; return; } // vertical: let the page scroll
+        drag.moved = true; area.classList.add('is-dragging');
+        try{ area.setPointerCapture(e.pointerId); }catch(err){}
+      }
+      x += dx; drag.v = dx; drag.last = e.clientX; wrap();
+    });
+    function end(){
+      if(!drag) return;
+      if(drag.moved){
+        fling = Math.max(-40, Math.min(40, drag.v));
+        if(drag.v) dir = drag.v < 0 ? -1 : 1;
+        area.classList.remove('is-dragging');
+        dragEnded = Date.now();
+      }
+      drag = null;
+    }
+    area.addEventListener('pointerup', end);
+    area.addEventListener('pointercancel', end);
+    area.addEventListener('wheel', function(e){
+      if(Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // vertical wheel keeps scrolling the page
+      e.preventDefault();
+      x -= e.deltaX; wrap();
+      dir = e.deltaX > 0 ? -1 : 1;
+    }, { passive: false });
+    area.addEventListener('dragstart', function(e){ e.preventDefault(); });
+    // swallow the click that ends a drag so links inside are not followed
+    area.addEventListener('click', function(e){
+      if(Date.now() - dragEnded < 250){ e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    return {
+      nudge: function(d, amount){ dir = d; boost = Math.min(18, boost + amount); },
+      setPaused: function(p){ paused = p; }
+    };
+  }
+
+  // ---- Client reviews loop ----------------------------------------------------------
+  function initReviews(C){
+    var wrap = document.querySelector('.reviews');
+    if(!wrap) return;
+    var viewport = wrap.querySelector('.reviews-viewport');
+    var track = wrap.querySelector('.reviews-track');
+    var btn = wrap.querySelector('.reviews-toggle');
+    if(C.reducedMotion){ wrap.classList.add('is-static'); if(btn) btn.hidden = true; return; }
+    // duplicate the set once so the loop is seamless; copies are hidden from assistive tech
+    Array.prototype.slice.call(track.children).forEach(function(li){
+      var copy = li.cloneNode(true);
+      copy.setAttribute('aria-hidden', 'true');
+      copy.setAttribute('inert', '');
+      track.appendChild(copy);
+    });
+    wrap.classList.add('is-looping');
+    var loop = loopDrive(C, track, viewport, { speed: 0.45, section: wrap });
+    if(btn){
+      btn.addEventListener('click', function(){
+        var p = btn.getAttribute('aria-pressed') !== 'true';
+        btn.setAttribute('aria-pressed', String(p));
+        loop.setPaused(p);
+      });
+    }
   }
 
   // ---- Hero typewriter ------------------------------------------------------------

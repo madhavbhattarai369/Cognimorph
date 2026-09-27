@@ -153,6 +153,10 @@ p{ margin: 0 0 1rem; max-width: 62ch; text-wrap: pretty; }
 p:last-child{ margin-bottom: 0; }
 .text-soft{ color: var(--text-soft); }
 .lede{ font-size: clamp(1.08rem, 1.4vw, 1.2rem); line-height: 1.6; color: var(--text-soft); max-width: 46ch; }
+.section-intro{ display: grid; gap: 1rem 3rem; align-items: end; margin-bottom: clamp(1.6rem,3vw,2.4rem); }
+.section-intro h2, .section-intro .lede{ margin-bottom: 0; }
+.section-intro .eyebrow{ margin-bottom: .9rem; }
+@media (min-width: 900px){ .section-intro{ grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); } .section-intro .lede{ justify-self: end; } }
 .sr-only{
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
@@ -680,6 +684,10 @@ html[data-theme="dark"] .theme-toggle .icon-sun{ display: block; }
   pointer-events: none;
 }
 .page-header h1{ max-width: 18ch; }
+.about-head{ display: grid; gap: 1.4rem 4rem; align-items: end; }
+.about-head h1{ margin: 0; }
+.about-head .lede{ margin: 0; }
+@media (min-width: 960px){ .about-head{ grid-template-columns: auto minmax(0, 42ch); justify-content: space-between; } .about-head .lede{ padding-bottom: .5rem; } }
 .page-header .media{ margin-top: clamp(2.5rem, 5vw, 3.5rem); }
 
 /* ==========================================================================
@@ -1304,9 +1312,9 @@ html[data-theme="dark"] .plat .dot[style*="#111"]{ background: #F5F1E8 !importan
 .kinetic-row{ overflow: hidden; }
 .kinetic-track{
   display: flex; align-items: center; width: max-content;
-  gap: clamp(1.2rem, 3vw, 2.6rem);
   will-change: transform;
 }
+.kinetic-track > *{ margin-right: clamp(1.2rem, 3vw, 2.6rem); }
 .k-item{
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 8vw, 7rem);
@@ -1362,8 +1370,8 @@ html:not(.js) .kinetic-track{ animation: slide 40s linear infinite; }
 /* ==========================================================================
    Home — client marquee
    ========================================================================== */
-.marquee-section{ padding: 2.4rem 0; }
-.marquee-label{ font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 1.1rem; }
+.marquee-section{ padding: clamp(2.6rem,5vw,3.6rem) 0; }
+.marquee-section .marquee-label{ font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); margin: 0 0 clamp(1.6rem,3vw,2.2rem); line-height: 1.5; }
 .marquee-label .sample-inline{ text-transform: none; letter-spacing: 0; }
 .marquee{
   overflow: hidden; position: relative;
@@ -1482,7 +1490,9 @@ html:not(.js) .kinetic-track{ animation: slide 40s linear infinite; }
   border-radius: var(--radius-md);
   overflow: hidden;
 }
+@media (min-width: 861px){ .metrics-band.metrics-6{ grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 860px){ .metrics-band{ grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 380px){ .metrics-band{ grid-template-columns: 1fr; } }
 .metric-cell{
   background: var(--bg);
   padding: clamp(1.6rem,3vw,2.4rem);
@@ -1499,6 +1509,7 @@ html:not(.js) .kinetic-track{ animation: slide 40s linear infinite; }
   letter-spacing: -.02em;
 }
 .metric-cell .mv .suf{ color: var(--cta); font-size: .6em; }
+.metric-cell .mv .pre{ color: var(--cta); font-size: .6em; align-self: flex-start; margin-top: .12em; }
 .metric-cell .ml{ font-size: .9rem; color: var(--text-soft); margin-top: .8rem; max-width: 22ch; }
 
 .sample-flag{
@@ -2001,7 +2012,7 @@ html[data-theme="dark"] .tool{ --tc: var(--tc-d, var(--accent)); }
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
-  padding-bottom: .1em; margin-bottom: -.1em;
+  padding: 0 .08em .1em; margin: 0 -.08em -.1em; /* room for serif and italic overhangs, so glyph edges are never clipped */
 }
 .split-words .w > span{
   display: inline-block;
@@ -2223,3 +2234,69 @@ html[data-theme="dark"] .msg.me{ color: #F7F3EA; }
   .note-back{ transform: none; }
   .notes-hint{ display: none; }
 }
+
+/* ==========================================================================
+   Home — client reviews (controllable loop: drifts, pauses on hover/focus, drag or swipe)
+   ========================================================================== */
+.reviews-viewport{
+  overflow: hidden; margin-top: clamp(2rem,4vw,3rem);
+  cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.reviews-viewport.is-dragging{ cursor: grabbing; }
+.reviews-track{
+  list-style: none; margin: 0; padding: .4rem 0 .8rem;
+  display: flex; gap: clamp(1rem,2vw,1.5rem); width: max-content;
+  padding-inline: max(20px, calc((100vw - var(--container, 1200px)) / 2));
+}
+.is-looping .reviews-track{ padding-inline: 0; gap: 0; will-change: transform; }
+.is-looping .reviews-track > li{ margin-right: clamp(1rem,2vw,1.5rem); }
+.review{ width: min(84vw, 400px); flex-shrink: 0; display: flex; }
+.review figure{
+  margin: 0; width: 100%;
+  display: flex; flex-direction: column; gap: 1.1rem;
+  padding: clamp(1.4rem,2.4vw,1.9rem);
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md);
+  transition: border-color .35s ease, transform .5s var(--ease-out);
+}
+.review figure:hover{ border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); transform: translateY(-3px); }
+.review-stars{ color: var(--cta); letter-spacing: .18em; font-size: .9rem; }
+.review blockquote{ margin: 0; flex: 1; }
+.review blockquote p{ margin: 0; font-size: 1.02rem; line-height: 1.6; color: var(--text); }
+.review figcaption{ display: grid; grid-template-columns: auto 1fr; gap: .15rem .8rem; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border); }
+.review-avatar{
+  grid-row: span 2; width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; font-size: .82rem; font-weight: 600; letter-spacing: .02em;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.review-who{ display: flex; flex-direction: column; line-height: 1.35; }
+.review-who strong{ font-size: .95rem; color: var(--text); font-weight: 600; }
+.review-who span{ font-size: .85rem; color: var(--text-soft); }
+.review-loc{ grid-column: 2; font-size: .78rem; letter-spacing: .05em; text-transform: uppercase; color: var(--text-soft); }
+.reviews-foot{ display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; }
+.reviews-hint{ margin: 0; font-size: .85rem; color: var(--text-soft); }
+.reviews-toggle .i-play{ display: none; }
+.reviews-toggle[aria-pressed="true"] .i-play{ display: block; }
+.reviews-toggle[aria-pressed="true"] .i-pause{ display: none; }
+.reviews.is-static .reviews-viewport{ overflow-x: auto; cursor: auto; -webkit-mask-image: none; mask-image: none; scroll-snap-type: x mandatory; }
+.reviews.is-static .review{ scroll-snap-align: start; }
+.reviews.is-static .reviews-hint{ display: none; }
+html:not(.js) .reviews-viewport{ overflow-x: auto; cursor: auto; }
+html:not(.js) .reviews-foot{ display: none; }
+/* capabilities strip: grab to scrub */
+.kinetic-row{ cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.kinetic-row.is-dragging{ cursor: grabbing; }
+
+/* ---- Social icons (footer + contact) ---- */
+.social{ list-style: none; margin: 1.3rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .6rem; }
+.social a{
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid var(--border); color: var(--text);
+  transition: color .25s ease, border-color .25s ease, background-color .25s ease, transform .35s var(--ease-out);
+}
+.social a:hover{ color: var(--cta); border-color: var(--cta); transform: translateY(-2px); }
+.social svg{ width: 19px; height: 19px; }
+.social-footer a{ color: rgba(244,239,228,.86); border-color: rgba(244,239,228,.22); }
+.social-footer a:hover{ color: #fff; border-color: var(--cta); background: color-mix(in srgb, var(--cta) 22%, transparent); }
+.social-inline{ margin-top: .8rem; }

@@ -11,7 +11,8 @@ Ordered by impact. Items 1–4 should be done before the site goes public.
 - `team.html` — confirm every name and role (leadership, Nabin Bhattarai, Nirmal Roka, Sweta Pandey,
   Saugat Bhandari and Martin Roeters were provided by the client; the rest are earlier sample names).
   Add real photos for everyone.
-- `about.html` — the "Founded 2019" fact comes from the original site data; confirm it.
+- `about.html` — "Founded 2024" (set on request); JSON-LD `foundingDate` matches.
+- `index.html` — **Client voices**: the six reviews are placeholders written in a realistic style. Replace each with an approved quote from a real client (role, company type and city) before launch, or remove the section. Do not add Review/Rating structured data for them.
 
 ## 2. Activate the contact form (one click)
 The form delivers to **hello@cognimorph.co** via FormSubmit and then sends the visitor to
