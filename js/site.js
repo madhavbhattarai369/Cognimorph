@@ -306,7 +306,7 @@
 
   // ---- Pause looping panel animations when off-screen -----------------------------
   function initAmbientPause(){
-    var loops = document.querySelectorAll('.anim-panel');
+    var loops = document.querySelectorAll('.anim-panel, .net-banner');
     observe(loops, function(el, inView){ el.classList.toggle('is-paused', !inView); }, { once: false });
   }
 

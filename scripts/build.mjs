@@ -118,7 +118,7 @@ function footer(root) {
       </div>
 ${cols}
     </div>
-    <p class="footer-disclaimer">Figures and case studies shown on this site are illustrative samples while client approvals are finalised. Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
+    <p class="footer-disclaimer">Results depend on budget, market and creative; no agency can guarantee a specific return.</p>
     <div class="footer-bottom">
       <span>&copy; <span id="footer-year">${new Date().getFullYear()}</span> Cognimorph. All rights reserved.</span>
       <div class="footer-bottom-links">

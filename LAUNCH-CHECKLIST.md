@@ -3,7 +3,9 @@
 Ordered by impact. Items 1–4 should be done before the site goes public.
 
 ## 1. Replace all sample content
-Search the codebase for `SAMPLE` — every instance is marked.
+The on-page "illustrative / sample" labels have been removed at the client's request, so the sample
+client names, metrics and case studies now read as real claims. Replace or remove them before launch.
+Search the codebase for `SAMPLE` — every instance is marked in an HTML comment.
 - `work.html` — four case studies. Figures are illustrative. Replace with audited,
   client-approved numbers, or remove any case you cannot evidence.
 - `index.html` — client marquee names, industry claims.

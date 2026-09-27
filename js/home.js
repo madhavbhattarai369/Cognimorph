@@ -10,7 +10,9 @@
 
     initMark(C);
     initManifesto(C);
-    initServices(C);
+    initServiceStack(C);
+    initNotes(C);
+    initRoadmap(C);
     initWorld(C);
     initOrbit(C);
     initKinetic(C);
@@ -198,85 +200,30 @@
     });
   }
 
-  // ---- Services showcase: hover, click, arrow keys, or gentle auto-advance ----------
-  function initServices(C){
-    var show = document.querySelector('.svc-show');
-    if(!show) return;
-    var items = Array.prototype.slice.call(show.querySelectorAll('.svc-item'));
-    var tabs = items.map(function(it){ return it.querySelector('.svc-tab'); });
-    var panels = Array.prototype.slice.call(show.querySelectorAll('.svc-panel'));
-    var current = 0, hoverTimer = null, lastX = -1, lastY = -1;
-
-    function select(i, focus){
-      if(i === current){ return; }
-      current = i;
-      items.forEach(function(it, k){
-        var on = k === i;
-        it.classList.toggle('is-active', on);
-        tabs[k].setAttribute('aria-expanded', String(on));
-        panels[k].classList.toggle('is-active', on);
-      });
-      // replay the panel's draw-on animation
-      var p = panels[i];
-      p.classList.remove('is-visible');
-      void p.offsetWidth;
-      p.classList.add('is-visible');
-      if(focus) tabs[i].focus();
-    }
-
-    // Keep the list a constant height (tallest expanded state) so rows below never jump
-    var list = show.querySelector('.svc-list');
-    function lockHeight(){
-      list.style.minHeight = '';
-      var base = list.getBoundingClientRect().height;
-      var open = items[current].querySelector('.svc-detail-inner').scrollHeight;
-      var tallest = Math.max.apply(null, items.map(function(it){ return it.querySelector('.svc-detail-inner').scrollHeight; }));
-      list.style.minHeight = Math.ceil(base - open + tallest) + 'px';
-    }
-    lockHeight();
-    window.addEventListener('resize', lockHeight);
-    window.addEventListener('load', lockHeight);
-
-    tabs.forEach(function(t, i){
-      t.addEventListener('click', function(){ select(i); });
-      if(C.finePointer){
-        // Only real pointer movement selects: rows shift as panels expand, and a shift
-        // under a resting cursor must not switch the service on its own.
-        t.addEventListener('pointermove', function(e){
-          var moved = e.clientX !== lastX || e.clientY !== lastY;
-          lastX = e.clientX; lastY = e.clientY;
-          if(i === current || !moved) return;
-          clearTimeout(hoverTimer);
-          hoverTimer = setTimeout(function(){ select(i); }, 110);
-        });
-        t.addEventListener('pointerleave', function(){ clearTimeout(hoverTimer); });
+  // ---- Service cards pin and stack; covered cards recede slightly -----------------
+  function initServiceStack(C){
+    var stack = document.querySelector('.svc-stack');
+    if(!stack || C.reducedMotion) return;
+    var cards = Array.prototype.slice.call(stack.querySelectorAll('.svc'));
+    cards.forEach(function(c, i){ c.style.setProperty('--si', i); });
+    var mq = window.matchMedia('(min-width: 1000px) and (min-height: 720px)');
+    var visible = false;
+    C.observe([stack], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
+    C.onScrollFrame(function(){
+      if(!visible) return;
+      if(!mq.matches){
+        cards.forEach(function(c){ if(c.style.transform){ c.style.transform = ''; c.style.removeProperty('--dim'); } });
+        return;
       }
-      t.addEventListener('keydown', function(e){
-        var n = null;
-        if(e.key === 'ArrowDown' || e.key === 'ArrowRight') n = (i + 1) % tabs.length;
-        if(e.key === 'ArrowUp' || e.key === 'ArrowLeft') n = (i - 1 + tabs.length) % tabs.length;
-        if(e.key === 'Home') n = 0;
-        if(e.key === 'End') n = tabs.length - 1;
-        if(n !== null){ e.preventDefault(); select(n, true); }
-      });
+      for(var i = 0; i < cards.length - 1; i++){
+        var cur = cards[i].getBoundingClientRect();
+        var next = cards[i + 1].getBoundingClientRect();
+        // how far the next card has slid over this one (0 .. 1)
+        var p = Math.max(0, Math.min(1, 1 - (next.top - cur.top) / cur.height));
+        cards[i].style.transform = 'scale(' + (1 - p * 0.05).toFixed(4) + ')';
+        cards[i].style.setProperty('--dim', (p * 0.28).toFixed(3));
+      }
     });
-
-    if(C.reducedMotion) return;
-    // Auto-advance while visible; the progress line pauses while the pointer or focus is inside
-    // Held while the pointer is over the showcase or keyboard focus is inside it. Checked
-    // directly (not via enter/leave) because rows resize under a resting cursor.
-    function syncHold(){
-      var held = show.matches(':hover') || !!show.querySelector(':focus-visible');
-      show.classList.toggle('is-held', held);
-    }
-    show.addEventListener('pointermove', syncHold);
-    show.addEventListener('focusin', syncHold);
-    show.addEventListener('focusout', function(){ setTimeout(syncHold, 0); });
-    setInterval(function(){ if(show.classList.contains('is-auto')) syncHold(); }, 400);
-    show.addEventListener('animationend', function(e){
-      if(e.animationName === 'svcTimer') select((current + 1) % items.length);
-    });
-    C.observe([show], function(el, inView){ el.classList.toggle('is-auto', inView); }, { once: false, rootMargin: '-15% 0px -15% 0px' });
   }
 
   // ---- Integration diagram: pause its loops off-screen ------------------------------
@@ -425,6 +372,58 @@
       return;
     }
     C.observe([canvas], function(_, inView){ visible = inView; if(inView){ layout(); start(); } }, { once: false, rootMargin: '100px 0px 100px 0px' });
+  }
+
+  // ---- What we know: notes turn over one after another as the section scrolls ------
+  function initNotes(C){
+    var pin = document.querySelector('.notes-pin');
+    if(!pin) return;
+    var notes = Array.prototype.slice.call(pin.querySelectorAll('.note'));
+    if(C.reducedMotion) return;
+    var pinned = window.matchMedia('(min-width: 900px) and (min-height: 700px)');
+    var visible = false;
+    function ease(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    C.observe([pin], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
+    C.onScrollFrame(function(y, vh){
+      if(!visible) return;
+      if(pinned.matches){
+        var r = pin.getBoundingClientRect();
+        var p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height - vh)));
+        notes.forEach(function(n, i){
+          var t = Math.max(0, Math.min(1, (p - (0.12 + i * 0.2)) / 0.26));
+          n.style.setProperty('--flip', (ease(t) * 180).toFixed(1) + 'deg');
+        });
+      } else {
+        notes.forEach(function(n){
+          var r = n.getBoundingClientRect();
+          var t = Math.max(0, Math.min(1, (vh * 0.62 - r.top) / (vh * 0.35)));
+          n.style.setProperty('--flip', (ease(t) * 180).toFixed(1) + 'deg');
+        });
+      }
+    });
+    C.queueScroll();
+  }
+
+  // ---- How we work: the roadmap line fills and each step lights up in turn --------
+  function initRoadmap(C){
+    var map = document.querySelector('.roadmap');
+    if(!map) return;
+    var steps = Array.prototype.slice.call(map.querySelectorAll('.rm-step'));
+    if(C.reducedMotion){ map.style.setProperty('--rm-p', 1); steps.forEach(function(s){ s.classList.add('is-on'); }); return; }
+    var visible = false;
+    C.observe([map], function(_, inView){ visible = inView; if(inView) C.queueScroll(); }, { once: false, rootMargin: '0px' });
+    C.onScrollFrame(function(y, vh){
+      if(!visible) return;
+      var r = map.getBoundingClientRect();
+      var line = vh * 0.62;                       // the "reading line" on screen
+      var p = Math.max(0, Math.min(1, (line - r.top) / r.height));
+      map.style.setProperty('--rm-p', p.toFixed(4));
+      steps.forEach(function(s){
+        var node = s.querySelector('.rm-node').getBoundingClientRect();
+        s.classList.toggle('is-on', node.top + node.height / 2 < line);
+      });
+    });
+    C.queueScroll();
   }
 
   // ---- Kinetic capabilities marquee: drifts, and speeds up / reverses with scroll ---
