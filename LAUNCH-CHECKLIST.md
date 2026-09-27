@@ -2,18 +2,14 @@
 
 Ordered by impact. Items 1–4 should be done before the site goes public.
 
-## 1. Replace all sample content
-The on-page "illustrative / sample" labels have been removed at the client's request, so the sample
-client names, metrics and case studies now read as real claims. Replace or remove them before launch.
-Search the codebase for `SAMPLE` — every instance is marked in an HTML comment.
-- `work.html` — four case studies. Figures are illustrative. Replace with audited,
-  client-approved numbers, or remove any case you cannot evidence.
-- `index.html` — client marquee names, industry claims.
-- `team.html` — leadership (Madhav Bhattarai, Bibek Shrestha) and Nabin Bhattarai are real; the other team names are samples. Add real photos for everyone.
-- Metrics band on `index.html` (7+ years, 150+ campaigns, 12 markets, 4 disciplines).
-
-Publishing invented client names or metrics you cannot back is the single largest
-risk on this site. Two real case studies beat four invented ones.
+## 1. Confirm remaining content
+- Client marquee and Work page now use real clients (Hello5, Risespace, 3B Foundation, Nepal Yoga
+  Institute & Retreat, Bilva, Radha Institute). Confirm each client is happy to be named, and review the
+  product descriptions on `work.html`.
+- Metrics band on `index.html` (7+ years, 150+ campaigns, 12 markets, 4 disciplines) — confirm these
+  figures, or edit them. The on-page "illustrative" labels were removed at the client's request.
+- `team.html` — Madhav Bhattarai, Bibek Shrestha and Nabin Bhattarai are real; other names are samples.
+  Add real photos for everyone.
 
 ## 2. Activate the contact form (one click)
 The form delivers to **hello@cognimorph.co** via FormSubmit and then sends the visitor to

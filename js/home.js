@@ -490,29 +490,27 @@
     schedule(900);
   }
 
-  // ---- Client marquee (sample names) ----------------------------------------------
+  // ---- Client marquee ----------------------------------------------
   function initMarquee(C){
     var track = document.getElementById('marquee-track');
     if(!track) return;
     var BRANDS = [
-      { n:'Himalaya Organics',   s:'Nepal',     c:'#155E91' },
-      { n:'Kathmandu Coffee Co.',s:'Nepal',     c:'#E96A24' },
-      { n:'Everest Logistics',   s:'Nepal',     c:'#102A3A' },
-      { n:'Sagarmatha Fintech',  s:'Nepal',     c:'#2C7CB0' },
-      { n:'Meridian Retail',     s:'Dubai',       c:'#155E91' },
-      { n:'Northwind Studios',   s:'UK',        c:'#B4531B' },
-      { n:'Harbor & Pine',       s:'USA',       c:'#155E91' },
-      { n:'Lumen Health',        s:'Singapore', c:'#102A3A' },
-      { n:'Atlas Interiors',     s:'Australia',     c:'#2C7CB0' }
+      { n:'Hello5',                          s:'Career intelligence app',         i:'H5', c:'#155E91' },
+      { n:'Risespace',                       s:'AI productivity app',             i:'RS', c:'#E96A24' },
+      { n:'3B Foundation',                   s:'Foundation',                      i:'3B', c:'#102A3A' },
+      { n:'Nepal Yoga Institute &amp; Retreat', s:'Yoga &amp; wellness',          i:'NY', c:'#2C7CB0' },
+      { n:'Bilva',                           s:'Fashion &middot; natural thread', i:'Bi', c:'#B4531B' },
+      { n:'Radha Institute',                 s:'Education',                       i:'RI', c:'#155E91' }
     ];
     function chip(b){
-      var initials = b.n.split(' ').slice(0,2).map(function(w){ return w[0]; }).join('');
+      var initials = b.i;
       return '<li class="brand-chip">'
            + '<span class="bx" style="background:' + b.c + '" aria-hidden="true">' + initials + '</span>'
            + '<span class="bn"><strong>' + b.n + '</strong><span>' + b.s + '</span></span>'
            + '</li>';
     }
     var list = BRANDS.map(chip).join('');
+    list += list; // enough chips to fill very wide screens
     // Second copy exists only to make the loop seamless — hide it from assistive tech
     track.innerHTML = list + list.replace(/<li class="brand-chip">/g, '<li class="brand-chip" aria-hidden="true">');
     var marquee = track.parentElement;

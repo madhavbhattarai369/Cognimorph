@@ -306,7 +306,7 @@
 
   // ---- Pause looping panel animations when off-screen -----------------------------
   function initAmbientPause(){
-    var loops = document.querySelectorAll('.anim-panel, .net-banner');
+    var loops = document.querySelectorAll('.anim-panel, .net-banner, .case-visual');
     observe(loops, function(el, inView){ el.classList.toggle('is-paused', !inView); }, { once: false });
   }
 
@@ -319,6 +319,14 @@
     var btn = document.getElementById('contact-submit');
     var label = btn && btn.querySelector('.btn-label');
     var redirect = form.getAttribute('data-redirect');
+
+    // Arriving from a "free consultation" button pre-selects that option
+    try{
+      if(new URLSearchParams(window.location.search).get('topic') === 'consultation'){
+        var interest = document.getElementById('interest');
+        if(interest) interest.value = 'Free consultation';
+      }
+    }catch(e){ /* URLSearchParams unavailable */ }
 
     function fail(){
       btn.disabled = false;
