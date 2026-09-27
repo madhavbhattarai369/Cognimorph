@@ -6,7 +6,7 @@ Ordered by impact. Items 1–4 should be done before the site goes public.
 - Client marquee and Work page now use real clients (Hello5, Risespace, 3B Foundation, Nepal Yoga
   Institute & Retreat, Bilva, Radha Institute). Confirm each client is happy to be named, and review the
   product descriptions on `work.html`.
-- Metrics band on `index.html` (7+ years, 150+ campaigns, 12 markets, 4 disciplines) — confirm these
+- Metrics band on `index.html` (7+ years, $5M+ paid media budget managed, 45M+ impressions, 150+ campaigns, 12 markets, 4 disciplines) — confirm these
   figures, or edit them. The on-page "illustrative" labels were removed at the client's request.
 - `team.html` — confirm every name and role (leadership, Nabin Bhattarai, Nirmal Roka, Sweta Pandey,
   Saugat Bhandari and Martin Roeters were provided by the client; the rest are earlier sample names).
