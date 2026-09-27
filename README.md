@@ -8,7 +8,7 @@ two small vanilla-JS files. No framework, no runtime dependencies.
 ```bash
 npm install      # once — installs esbuild (dev only)
 npm run build    # renders header/footer into every page, minifies CSS + JS
-npm start        # serves the folder at http://localhost:8080
+npm start        # serves the folder at http://localhost:8080 with clean URLs
 ```
 
 The build also assembles `dist/` (public files only), which is what Netlify publishes (`netlify.toml`).
@@ -35,8 +35,8 @@ be uploaded to any static host as-is.
 
 ## Contact flow
 
-Every "Contact / Let's talk / Start a project" CTA links to `contact.html`
-(`https://cognimorph.co/contact.html` in production). The form posts to FormSubmit for
+Every "Contact / Let's talk / Start a project" CTA links to `/contact` (the file is `contact.html`)
+(served as `https://cognimorph.co/contact` in production: clean URLs, no `.html`). The form posts to FormSubmit for
 **hello@cognimorph.co** and then redirects to **https://cognimorph.co/thank-you**. See
 `LAUNCH-CHECKLIST.md` for the one-time FormSubmit activation.
 

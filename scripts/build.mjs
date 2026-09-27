@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const SITE = {
-  contactUrl: 'contact.html', // → https://cognimorph.co/contact.html
+  contactUrl: 'contact', // → https://cognimorph.co/contact (clean URLs: the host serves contact.html)
   email: 'hello@cognimorph.co',
   linkedin: 'https://www.linkedin.com/company/data-morph/'
 };
@@ -30,27 +30,27 @@ const socialList = cls => `<ul class="social ${cls}" aria-label="Cognimorph on s
   `<li><a href="${esc(url)}" target="_blank" rel="noopener" aria-label="Cognimorph on ${name}" title="${name}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">${icon}</svg></a></li>`).join('')}</ul>`;
 
 const NAV = [
-  ['services.html', 'Services'],
-  ['work.html', 'Work'],
-  ['insights.html', 'Insights'],
-  ['about.html', 'About'],
-  ['team.html', 'Team'],
-  ['careers.html', 'Careers']
+  ['services', 'Services'],
+  ['work', 'Work'],
+  ['insights', 'Insights'],
+  ['about', 'About'],
+  ['team', 'Team'],
+  ['careers', 'Careers']
 ];
 
 const FOOTER = [
   ['Capabilities', [
-    ['services.html#build', 'Digital Build'],
-    ['services.html#growth', 'Digital Growth'],
-    ['services.html#creative', 'Creative'],
-    ['services.html#ai', 'AI & Automation']
+    ['services#build', 'Digital Build'],
+    ['services#growth', 'Digital Growth'],
+    ['services#creative', 'Creative'],
+    ['services#ai', 'AI & Automation']
   ]],
   ['Company', [
-    ['work.html', 'Work'],
-    ['insights.html', 'Insights'],
-    ['about.html', 'About'],
-    ['team.html', 'Team'],
-    ['careers.html', 'Careers']
+    ['work', 'Work'],
+    ['insights', 'Insights'],
+    ['about', 'About'],
+    ['team', 'Team'],
+    ['careers', 'Careers']
   ]],
   ['Get in touch', [
     [SITE.contactUrl, 'Contact us'],
@@ -75,10 +75,10 @@ const ICON = {
 };
 
 function header(page, root) {
-  const cur = href => (href === page ? ' aria-current="page"' : '');
+  const cur = href => (href === page.replace(/\.html$/, '') ? ' aria-current="page"' : '');
   const logos = `<img class="logo-light" src="${root}assets/logo-horizontal.png" alt="Cognimorph" width="122" height="30">`
     + `<img class="logo-dark" src="${root}assets/logo-horizontal-dark.png" alt="Cognimorph" width="122" height="30">`;
-  const brand = `<a class="brand" href="${link(root, 'index.html')}" aria-label="Cognimorph home">${logos}</a>`;
+  const brand = `<a class="brand" href="${(root || './')}" aria-label="Cognimorph home">${logos}</a>`;
   const contact = link(root, SITE.contactUrl);
   return `<header id="site-header">
   <div class="site-header">
@@ -132,8 +132,8 @@ ${cols}
     <div class="footer-bottom">
       <span>&copy; <span id="footer-year">${new Date().getFullYear()}</span> Cognimorph. All rights reserved.</span>
       <div class="footer-bottom-links">
-        <a href="${link(root, 'privacy.html')}">Privacy</a>
-        <a href="${link(root, 'terms.html')}">Terms</a>
+        <a href="${link(root, 'privacy')}">Privacy</a>
+        <a href="${link(root, 'terms')}">Terms</a>
         <a href="#main">Back to top &uarr;</a>
       </div>
     </div>

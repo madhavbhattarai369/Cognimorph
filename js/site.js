@@ -9,9 +9,9 @@
   // ---- Site-wide settings -------------------------------------------------
   var CONFIG = {
     // Every "Contact / Let's talk / Start a project" CTA goes to the contact page,
-    // i.e. https://cognimorph.co/contact.html once deployed. (Header/footer links
+    // i.e. https://cognimorph.co/contact once deployed. (Header/footer links
     // are rendered by scripts/build.mjs — keep the two in step.)
-    contactUrl: 'contact.html',
+    contactUrl: 'contact',
     email: 'hello@cognimorph.co',
     linkedin: 'https://www.linkedin.com/company/data-morph/',
     // WhatsApp business number in international format, digits only (e.g. '9779800000000').

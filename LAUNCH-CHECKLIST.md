@@ -39,7 +39,7 @@ visitor is sent to a dead number.
 ## 4. Confirm the domain and social links
 - All canonical tags and the sitemap assume `https://cognimorph.co/`. Update if the
   domain differs (search all files for `cognimorph.co`).
-- LinkedIn URL is a guess. Verify it in `scripts/build.mjs` (header/footer) and `contact.html`, then run `npm run build`.
+- Social links (LinkedIn, Instagram, Facebook, TikTok) live in `scripts/build.mjs` (`SOCIAL`); run `npm run build` after editing.
 - `hello@cognimorph.co` must exist and be monitored.
 
 ## 4b. Hosting and security headers

@@ -5,3 +5,61 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+# Clean URLs: Netlify serves /about from about.html automatically; send the old
+# .html addresses (and /index) to the clean ones.
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/index"
+  to = "/"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/services.html"
+  to = "/services"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/work.html"
+  to = "/work"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/insights.html"
+  to = "/insights"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/about.html"
+  to = "/about"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/team.html"
+  to = "/team"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/careers.html"
+  to = "/careers"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/contact.html"
+  to = "/contact"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/privacy.html"
+  to = "/privacy"
+  status = 301
+  force = true
+[[redirects]]
+  from = "/terms.html"
+  to = "/terms"
+  status = 301
+  force = true
