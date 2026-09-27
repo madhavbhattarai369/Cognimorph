@@ -47,6 +47,26 @@ visitor is sent to a dead number.
 - Make sure the host serves `404.html` for missing pages and `thank-you/index.html` at `/thank-you`.
 - If you add analytics, update the Content-Security-Policy in `scripts/build.mjs` and `_headers`, and the privacy policy.
 
+## Publishing on Vercel (+ Namecheap DNS)
+`vercel.json` runs `npm run build`, serves `dist/` and sends the same security headers as `_headers`.
+
+1. Vercel → Project → **Settings → Git**: set the production branch to the branch that holds the site
+   (or merge it into `main`).
+2. Vercel → Project → **Settings → Domains**: add `cognimorph.co` and `www.cognimorph.co`; choose to redirect
+   `www` to `cognimorph.co`. Vercel then shows the exact records to create (use those values if they differ
+   from below).
+3. Namecheap → Domain List → **Manage → Advanced DNS → Host Records**:
+   - Delete the parking records (`URL Redirect Record` on `@`, `CNAME www → parkingpage.namecheap.com`) and
+     any older A/CNAME for `@` or `www` (for example Netlify's).
+   - **A Record**: Host `@`, Value `76.76.21.21` (or the newer IP Vercel shows, e.g. `216.198.79.1`), TTL Automatic.
+   - **CNAME Record**: Host `www`, Value `cname.vercel-dns.com` (or the project-specific value Vercel shows),
+     TTL Automatic.
+   - Keep all **MX** and **TXT** records (email for hello@cognimorph.co). If you have a **CAA** record, add
+     `0 issue "letsencrypt.org"` so Vercel can issue HTTPS.
+4. Wait until Vercel shows "Valid Configuration" for both domains (minutes to a few hours); HTTPS is issued
+   automatically. Then test `https://cognimorph.co/thank-you`, a made-up URL (404 page) and one form enquiry,
+   and click FormSubmit's activation email.
+
 ## Publishing (Netlify + Namecheap)
 The repo is ready for Netlify: `netlify.toml` runs `npm run build` and publishes `dist/` (public files only).
 `_headers` (security + caching) and `404.html` are picked up automatically; `/thank-you` is served from
